@@ -95,3 +95,21 @@ Example:
 ```php
 \Assets::removeStylesheets(['font-awesome']);
 ```
+
+### Others
+
+- Set version for assets. Add to .env
+
+```bash
+ASSETS_VERSION=1.0
+```
+
+Then all assets will be added `?v=1.0`
+
+- Change to online mode
+
+```bash
+ASSETS_OFFLINE=false
+```
+
+Then assets will be loaded from CDN if it's defined in config file.
