@@ -30,7 +30,7 @@
             ],
             "aliases": {
                 "Assets": "Botble\\Assets\\Facades\\AssetsFacade"
-            }it
+            }
         }
     },
     "minimum-stability": "dev",

@@ -365,7 +365,7 @@ class Assets
     {
         $stylesheets = $this->getStylesheets(['core']);
         $headScripts = $this->getJavascript('top');
-        return view('core.assets::header', compact('stylesheets', 'headScripts'))->render();
+        return view('assets::header', compact('stylesheets', 'headScripts'))->render();
     }
 
     /**
@@ -376,6 +376,6 @@ class Assets
     public function renderFooter()
     {
         $bodyScripts = $this->getJavascript('bottom');
-        return view('core.assets::footer', compact('bodyScripts'))->render();
+        return view('assets::footer', compact('bodyScripts'))->render();
     }
 }
