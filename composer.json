@@ -1,0 +1,37 @@
+{
+    "name": "botble/assets",
+    "description": "Laravel assets management",
+    "license": "MIT",
+    "keywords": [
+        "botble",
+        "botble cms",
+        "botble platform",
+        "botble assets"
+    ],
+    "homepage": "https://botble.com",
+    "authors": [
+        {
+            "name": "Sang Nguyen",
+            "email": "sangnguyenplus@gmail.com"
+        }
+    ],
+    "require": {
+        "laravelcollective/html": "5.1.*|5.2.*|5.3.*|5.4.*|5.5.*|5.6.*|5.7.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Botble\\Assets\\": "src"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Botble\\Assets\\Providers\\AssetsServiceProvider"
+            ],
+            "aliases": {
+                "Assets": "Botble\\Assets\\Facades\\AssetsFacade"
+            }
+        }
+    },
+    "minimum-stability": "stable"
+}
