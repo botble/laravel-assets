@@ -1,5 +1,9 @@
 # Laravel Assets management
 
+![Build status](https://travis-ci.org/botble/assets.svg)
+![Total downloads](https://poser.pugx.org/botble/assets/d/total.svg)
+![Latest Stable Version](https://poser.pugx.org/botble/assets/v/stable.svg)
+
 ## Installation
 
 ```bash
