@@ -22,7 +22,7 @@ Add to section `providers` of `config/app.php`:
 // config/app.php
 'providers' => [
     ...
-    Botble\Media\Providers\MediaServiceProvider::class,
+    Botble\Assets\Providers\AssetsServiceProvider::class,
 ];
 ```
 

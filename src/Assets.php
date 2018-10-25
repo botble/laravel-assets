@@ -113,7 +113,10 @@ class Assets
         foreach ($assets as &$item) {
             $item = $item . $this->build;
             if (!in_array($item, $this->appendedCss)) {
-                $this->appendedCss[] = ['src' => $item, 'attributes' => []];
+                $this->appendedCss[] = [
+                    'src' => $item,
+                    'attributes' => [],
+                ];
             }
         }
         return $this;
