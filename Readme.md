@@ -1,8 +1,9 @@
 # Laravel Assets management
 
-![Build status](https://travis-ci.org/botble/assets.svg)
 ![Total downloads](https://poser.pugx.org/botble/assets/d/total.svg)
 ![Latest Stable Version](https://poser.pugx.org/botble/assets/v/stable.svg)
+![Latest Unstable Version](https://poser.pugx.org/botble/assets/v/unstable)
+![License](https://poser.pugx.org/botble/assets/license)
 
 ## Installation
 
@@ -123,3 +124,6 @@ Then assets will be loaded from CDN if it's defined in config file.
 ```bash
 ASSETS_ENABLE_VERSION=false
 ```
+
+# License
+[MIT](LICENSE) © Sang Nguyen
