@@ -2,8 +2,8 @@
 
 [![Latest Version](https://img.shields.io/github/release/botble/laravel-assets.svg?style=flat-square)](https://github.com/botble/laravel-assets/releases)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
-[![Build Status](https://img.shields.io/travis/botble/assets/master.svg?style=flat-square)](https://travis-ci.org/botble/assets)
-[![Quality Score](https://img.shields.io/scrutinizer/g/botble/assets.svg?style=flat-square)](https://scrutinizer-ci.com/g/botble/assets)
+[![Build Status](https://img.shields.io/travis/botble/laravel-assets/master.svg?style=flat-square)](https://travis-ci.org/botble/laravel-assets)
+[![Quality Score](https://img.shields.io/scrutinizer/g/botble/laravel-assets.svg?style=flat-square)](https://scrutinizer-ci.com/g/botble/laravel-assets)
 [![StyleCI](https://styleci.io/repos/32067087/shield)](https://styleci.io/repos/32067087)
 [![Total Downloads](https://img.shields.io/packagist/dt/botble/assets.svg?style=flat-square)](https://packagist.org/packages/botble/assets)
 
