@@ -38,7 +38,7 @@ class AssetsTest extends TestCase
         $response = $this->assets->getJavascript();
 
         $this->assertNotEmpty($response);
-        $this->assertEmpty(array_get(array_first($response), 'attributes'));
+        $this->assertEmpty($response[0]['attributes']);
     }
 
     public function testGetStylesheets()
@@ -59,6 +59,6 @@ class AssetsTest extends TestCase
         $response = $this->assets->getStylesheets();
 
         $this->assertNotEmpty($response);
-        $this->assertNotEmpty(array_get(array_first($response), 'attributes'));
+        $this->assertNotEmpty($response[0]['attributes']);
     }
 }
