@@ -23,10 +23,10 @@ class AssetsTest extends TestCase
         Mockery::close();
     }
 
-    public function testGetJavascript()
+    public function testGetScripts()
     {
         $this->assets
-            ->shouldReceive('getJavascript')
+            ->shouldReceive('getScripts')
             ->once()
             ->andReturn([
                 [
@@ -35,16 +35,17 @@ class AssetsTest extends TestCase
                 ],
             ]);
 
-        $response = $this->assets->getJavascript();
+        $response = $this->assets->getScripts();
 
         $this->assertNotEmpty($response);
+
         $this->assertEmpty($response[0]['attributes']);
     }
 
-    public function testGetStylesheets()
+    public function testGetStyles()
     {
         $this->assets
-            ->shouldReceive('getStylesheets')
+            ->shouldReceive('getStyles')
             ->once()
             ->andReturn([
                 [
@@ -56,7 +57,7 @@ class AssetsTest extends TestCase
                 ],
             ]);
 
-        $response = $this->assets->getStylesheets();
+        $response = $this->assets->getStyles();
 
         $this->assertNotEmpty($response);
         $this->assertNotEmpty($response[0]['attributes']);
