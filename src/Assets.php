@@ -8,7 +8,6 @@ use Illuminate\Config\Repository;
 /**
  * Class Assets.
  *
- * @author Sang Nguyen
  * @since 22/07/2015 11:23 PM
  */
 class Assets
@@ -58,7 +57,6 @@ class Assets
     /**
      * Assets constructor.
      *
-     * @author Sang Nguyen
      * @param  Repository  $config
      * @param  HtmlBuilder  $htmlBuilder
      */
@@ -80,7 +78,6 @@ class Assets
      *
      * @param  array  $assets
      * @return $this
-     * @author Sang Nguyen
      */
     public function addScripts($assets)
     {
@@ -98,7 +95,6 @@ class Assets
      *
      * @param  array  $assets
      * @return $this
-     * @author Sang Nguyen
      */
     public function addStyles($assets)
     {
@@ -116,7 +112,6 @@ class Assets
      *
      * @param  array|string  $assets
      * @return $this
-     * @author Sang Nguyen
      */
     public function addStylesDirectly($assets)
     {
@@ -144,7 +139,6 @@ class Assets
      * @param  string|array  $assets
      * @param  string  $location
      * @return $this
-     * @author Sang Nguyen
      */
     public function addScriptsDirectly($assets, $location = self::ASSETS_SCRIPT_POSITION_FOOTER)
     {
@@ -171,7 +165,6 @@ class Assets
      *
      * @param  array  $assets
      * @return $this
-     * @author Sang Nguyen
      */
     public function removeStyles($assets)
     {
@@ -191,7 +184,6 @@ class Assets
      *
      * @param  array  $assets
      * @return $this
-     * @author Sang Nguyen
      */
     public function removeScripts($assets)
     {
@@ -211,7 +203,6 @@ class Assets
      *
      * @param  string  $location `top` or `bottom`
      * @return array
-     * @author Sang Nguyen
      */
     public function getScripts($location = null)
     {
@@ -243,7 +234,6 @@ class Assets
      *
      * @param  array  $lastModules Append last CSS to current module
      * @return array
-     * @author Sang Nguyen
      */
     public function getStyles($lastModules = [])
     {
@@ -285,7 +275,6 @@ class Assets
      *
      * @param  string  $name
      * @return  string|null
-     * @author Sang Nguyen
      */
     public function scriptToHtml($name)
     {
@@ -296,7 +285,6 @@ class Assets
      * Convert style to html.
      *
      * @param  string  $name
-     * @author Sang Nguyen
      */
     public function styleToHtml($name)
     {
@@ -308,7 +296,6 @@ class Assets
      *
      * @return string
      * @throws \Throwable
-     * @author Sang Nguyen
      */
     public function renderHeader()
     {
@@ -324,7 +311,6 @@ class Assets
      *
      * @return string
      * @throws \Throwable
-     * @author Sang Nguyen
      */
     public function renderFooter()
     {
@@ -364,10 +350,16 @@ class Assets
         }
 
         if (! is_array($src)) {
-            $scripts[] = ['src' => $src.$this->build, 'attributes' => $attributes];
+            $scripts[] = [
+                'src' => $src.$this->build,
+                'attributes' => $attributes,
+            ];
         } else {
             foreach ($src as $s) {
-                $scripts[] = ['src' => $s.$this->build, 'attributes' => $attributes];
+                $scripts[] = [
+                    'src' => $s.$this->build,
+                    'attributes' => $attributes,
+                ];
             }
         }
 
@@ -391,8 +383,8 @@ class Assets
     protected function getFallbackScript($src, $configName)
     {
         return [
-            'src'  => $src,
-            'fallback' => array_get($this->config, $configName.'.fallback'),
+            'src'         => $src,
+            'fallback'    => array_get($this->config, $configName.'.fallback'),
             'fallbackURL' => array_get($this->config, $configName.'.src.local'),
         ];
     }
@@ -407,7 +399,7 @@ class Assets
     protected function itemToHtml($name, $type = 'style')
     {
         if (! in_array($type, ['style', 'script'])) {
-            return;
+            return null;
         }
 
         $config = 'resources.styles.'.$name;
@@ -435,5 +427,7 @@ class Assets
 
             return $html;
         }
+
+        return null;
     }
 }

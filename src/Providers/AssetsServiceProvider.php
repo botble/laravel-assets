@@ -7,7 +7,6 @@ use Illuminate\Support\ServiceProvider;
 /**
  * Class AssetsServiceProvider.
  *
- * @author Sang Nguyen
  * @since 22/07/2015 11:23 PM
  */
 class AssetsServiceProvider extends ServiceProvider
@@ -17,9 +16,6 @@ class AssetsServiceProvider extends ServiceProvider
      */
     protected $app;
 
-    /**
-     * @author Sang Nguyen
-     */
     public function boot()
     {
         $this->mergeConfigFrom(__DIR__.'/../../config/assets.php', 'assets');
