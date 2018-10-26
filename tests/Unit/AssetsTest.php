@@ -2,9 +2,9 @@
 
 namespace Botble\Assets\Tests;
 
-use PHPUnit\Framework\TestCase;
 use Mockery;
 use Botble\Assets\Assets;
+use PHPUnit\Framework\TestCase;
 
 class AssetsTest extends TestCase
 {
