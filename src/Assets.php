@@ -26,30 +26,33 @@ class Assets
     /**
      * @var array
      */
-    protected $javascript = [];
+    protected $scripts = [];
 
     /**
      * @var array
      */
-    protected $stylesheets = [];
+    protected $styles = [];
+
+    /**
+     * @var array
+     */
+    protected $appendedScripts = [
+        'header' => [],
+        'footer' => [],
+    ];
+
+    /**
+     * @var array
+     */
+    protected $appendedStyles = [];
 
     /**
      * @var string
      */
     protected $build = '';
 
-    /**
-     * @var array
-     */
-    protected $appendedJs = [
-        'top'    => [],
-        'bottom' => [],
-    ];
-
-    /**
-     * @var array
-     */
-    protected $appendedCss = [];
+    const ASSETS_SCRIPT_POSITION_HEADER = 'header';
+    const ASSETS_SCRIPT_POSITION_FOOTER = 'footer';
 
     /**
      * Assets constructor.
@@ -59,13 +62,13 @@ class Assets
      */
     public function __construct(Repository $config, HtmlBuilder $htmlBuilder)
     {
-        $this->config = $config;
+        $this->config = $config->get('assets');
         $this->htmlBuilder = $htmlBuilder;
 
-        $this->javascript = $this->config->get('assets.javascript');
-        $this->stylesheets = $this->config->get('assets.stylesheets');
+        $this->scripts = $this->config['scripts'];
+        $this->styles = $this->config['styles'];
 
-        $this->build = $this->config->get('assets.enable_version') ? '?v=' . $this->config->get('assets.version') : '';
+        $this->build = $this->config['enable_version'] ? '?v=' . $this->config['version'] : '';
     }
 
     /**
@@ -75,12 +78,12 @@ class Assets
      * @return $this
      * @author Sang Nguyen
      */
-    public function addJavascript($assets)
+    public function addScripts($assets)
     {
         if (!is_array($assets)) {
             $assets = [$assets];
         }
-        $this->javascript = array_merge($this->javascript, $assets);
+        $this->scripts = array_merge($this->scripts, $assets);
         return $this;
     }
 
@@ -91,12 +94,12 @@ class Assets
      * @return $this
      * @author Sang Nguyen
      */
-    public function addStylesheets($assets)
+    public function addStyles($assets)
     {
         if (!is_array($assets)) {
             $assets = [$assets];
         }
-        $this->stylesheets = array_merge($this->stylesheets, $assets);
+        $this->styles = array_merge($this->styles, $assets);
         return $this;
     }
 
@@ -105,16 +108,16 @@ class Assets
      * @return $this
      * @author Sang Nguyen
      */
-    public function addStylesheetsDirectly($assets)
+    public function addStylesDirectly($assets)
     {
         if (!is_array($assets)) {
             $assets = func_get_args();
         }
         foreach ($assets as &$item) {
             $item = $item . $this->build;
-            if (!in_array($item, $this->appendedCss)) {
-                $this->appendedCss[] = [
-                    'src' => $item,
+            if (!in_array($item, $this->appendedStyles)) {
+                $this->appendedStyles[] = [
+                    'src'        => $item,
                     'attributes' => [],
                 ];
             }
@@ -128,7 +131,7 @@ class Assets
      * @return $this
      * @author Sang Nguyen
      */
-    public function addJavascriptDirectly($assets, $location = 'bottom')
+    public function addScriptsDirectly($assets, $location = self::ASSETS_SCRIPT_POSITION_FOOTER)
     {
         if (!is_array($assets)) {
             $assets = func_get_args();
@@ -136,8 +139,11 @@ class Assets
 
         foreach ($assets as &$item) {
             $item = $item . $this->build;
-            if (!in_array($item, $this->appendedJs[$location])) {
-                $this->appendedJs[$location][] = ['src' => $item, 'attributes' => []];
+            if (!in_array($item, $this->appendedScripts[$location])) {
+                $this->appendedScripts[$location][] = [
+                    'src'        => $item,
+                    'attributes' => [],
+                ];
             }
         }
         return $this;
@@ -150,31 +156,31 @@ class Assets
      * @return $this
      * @author Sang Nguyen
      */
-    public function removeStylesheets($assets)
+    public function removeStyles($assets)
     {
         if (!is_array($assets)) {
             $assets = [$assets];
         }
         foreach ($assets as $rem) {
-            unset($this->stylesheets[array_search($rem, $this->stylesheets)]);
+            unset($this->styles[array_search($rem, $this->styles)]);
         }
         return $this;
     }
 
     /**
-     * Add Javascript to current module
+     * Add Javascript
      *
      * @param array $assets
      * @return $this
      * @author Sang Nguyen
      */
-    public function removeJavascript($assets)
+    public function removeScripts($assets)
     {
         if (!is_array($assets)) {
             $assets = [$assets];
         }
         foreach ($assets as $rem) {
-            unset($this->javascript[array_search($rem, $this->javascript)]);
+            unset($this->scripts[array_search($rem, $this->scripts)]);
         }
         return $this;
     }
@@ -183,58 +189,27 @@ class Assets
      * Get All Javascript in current module
      *
      * @param string $location : top or bottom
-     * @param boolean $version : show version?
      * @return array
      * @author Sang Nguyen
      */
-    public function getJavascript($location = null, $version = true)
+    public function getScripts($location = null)
     {
         $scripts = [];
-        $this->javascript = array_unique($this->javascript);
-        foreach ($this->javascript as $script) {
-            $configName = 'assets.resources.javascript.' . $script;
+        $this->scripts = array_unique($this->scripts);
+        foreach ($this->scripts as $script) {
+            $configName = 'resources.javascript.' . $script;
 
-            if ($this->config->has($configName)) {
-                if (!empty($location) && $location != $this->config->get($configName . '.location')) {
+            if (isset($this->config[$configName])) {
+                if (!empty($location) && $location != $this->config[$configName . '.location']) {
                     continue; // Skip assets that don't match this location
                 }
 
-                $src = $this->config->get($configName . '.src.local');
-                $cdn = false;
-                $attributes = $this->config->get($configName . '.attributes', []);
-                if ($this->config->get($configName . '.use_cdn') && !$this->config->get('assets.offline')) {
-                    $src = $this->config->get($configName . '.src.cdn');
-                    $cdn = true;
-                    $attributes = [];
-                }
-
-                if ($this->config->get($configName . '.include_style')) {
-                    $this->addStylesheets([$script]);
-                }
-
-                $version = $version ? $this->build : '';
-                if (!is_array($src)) {
-                    $scripts[] = ['src' => $src . $version, 'attributes' => $attributes];
-                } else {
-                    foreach ($src as $s) {
-                        $scripts[] = ['src' => $s . $version, 'attributes' => $attributes];
-                    }
-                }
-
-                if (empty($src) && $cdn && $location === 'top' && $this->config->has($configName . '.fallback')) {
-                    // Fallback to local script if CDN fails
-                    $fallback = $this->config->get($configName . '.fallback');
-                    $scripts[] = [
-                        'src'         => $src,
-                        'fallback'    => $fallback,
-                        'fallbackURL' => $this->config->get($configName . '.src.local'),
-                    ];
-                }
+                $scripts = array_merge($scripts, $this->getScriptItem($location, $configName, $script));
             }
         }
 
-        if (isset($this->appendedJs[$location])) {
-            $scripts = array_merge($scripts, $this->appendedJs[$location]);
+        if (isset($this->appendedScripts[$location])) {
+            $scripts = array_merge($scripts, $this->appendedScripts[$location]);
         }
 
         return $scripts;
@@ -244,97 +219,55 @@ class Assets
      * Get All CSS in current module
      *
      * @param array $lastModules : append last CSS to current module
-     * @param boolean $version : show version?
      * @return array
      * @author Sang Nguyen
      */
-    public function getStylesheets($lastModules = [], $version = true)
+    public function getStyles($lastModules = [])
     {
         $stylesheets = [];
         if (!empty($lastModules)) {
-            $this->stylesheets = array_merge($this->stylesheets, $lastModules);
+            $this->styles = array_merge($this->styles, $lastModules);
         }
 
-        $this->stylesheets = array_unique($this->stylesheets);
-        foreach ($this->stylesheets as $style) {
-            $configName = 'assets.resources.stylesheets.' . $style;
-            if ($this->config->has($configName)) {
-                $src = $this->config->get($configName . '.src.local');
-                $attributes = $this->config->get($configName . '.attributes', []);
-                if ($this->config->get($configName . '.use_cdn') && !$this->config->get('assets.offline')) {
-                    $src = $this->config->get($configName . '.src.cdn');
+        $this->styles = array_unique($this->styles);
+        foreach ($this->styles as $style) {
+            $configName = 'resources.stylesheets.' . $style;
+            if (isset($this->config[$configName])) {
+                $src = $this->config[$configName . '.src.local'];
+                $attributes = $this->config[$configName . '.attributes'] ?? [];
+                if ($this->config[$configName . '.use_cdn'] && !$this->config['offline']) {
+                    $src = $this->config[$configName . '.src.cdn'];
                     $attributes = [];
                 }
 
                 foreach ((array)$src as $s) {
                     $stylesheets[] = [
-                        'src'        => $s . ($version ? $this->build : ''),
+                        'src'        => $s . $this->build,
                         'attributes' => $attributes,
                     ];
                 }
             }
         }
 
-        return array_merge($stylesheets, $this->appendedCss);
+        return array_merge($stylesheets, $this->appendedStyles);
     }
 
     /**
      * @param $name
-     * @param bool $version
      * @author Sang Nguyen
      */
-    public function javascriptToHtml($name, $version = true)
+    public function scriptToHtml($name)
     {
-        return $this->itemToHtml($name, $version, 'script');
+        return $this->itemToHtml($name, 'script');
     }
 
     /**
      * @param $name
-     * @param bool $version
      * @author Sang Nguyen
      */
-    public function stylesheetToHtml($name, $version = true)
+    public function styleToHtml($name)
     {
-        return $this->itemToHtml($name, $version, 'style');
-    }
-
-    /**
-     * @param $name
-     * @param bool $version
-     * @param string $type
-     * @return null|string
-     */
-    protected function itemToHtml($name, $version = true, $type = 'style')
-    {
-        if (!in_array($type, ['style', 'script'])) {
-            return null;
-        }
-
-        $config = 'assets.resources.stylesheets.' . $name;
-        if ($type === 'script') {
-            $config = 'assets.resources.javascript.' . $name;
-        }
-
-        if ($this->config->has($config)) {
-
-            $src = $this->config->get($config . '.src.local');
-            if ($this->config->get($config . '.use_cdn') && !$this->config->get('assets.offline')) {
-                $src = $this->config->get($config . '.src.cdn');
-            }
-
-            if (!is_array($src)) {
-                $src = [$src];
-            }
-
-            $html = '';
-            foreach ($src as $item) {
-                $html .= $this->htmlBuilder->{$type}($item . ($version ? $this->build : ''), ['class' => 'hidden'])->toHtml();
-            }
-
-            return $html;
-        }
-
-        return null;
+        return $this->itemToHtml($name, 'style');
     }
 
     /**
@@ -344,8 +277,8 @@ class Assets
      */
     public function renderHeader()
     {
-        $stylesheets = $this->getStylesheets(['core']);
-        $headScripts = $this->getJavascript('top');
+        $stylesheets = $this->getStyles(['core']);
+        $headScripts = $this->getScripts(self::ASSETS_SCRIPT_POSITION_HEADER);
         return view('assets::header', compact('stylesheets', 'headScripts'))->render();
     }
 
@@ -356,7 +289,101 @@ class Assets
      */
     public function renderFooter()
     {
-        $bodyScripts = $this->getJavascript('bottom');
+        $bodyScripts = $this->getScripts(self::ASSETS_SCRIPT_POSITION_FOOTER);
         return view('assets::footer', compact('bodyScripts'))->render();
+    }
+
+    /**
+     * @param $location
+     * @param $configName
+     * @param $script
+     * @return array
+     */
+    protected function getScriptItem($location, $configName, $script)
+    {
+        $scripts = [];
+        $src = $this->config[$configName . '.src.local'];
+        $cdn = false;
+        $attributes = $this->config[$configName . '.attributes'] ?? [];
+
+        if ($this->config[$configName . '.use_cdn'] && !$this->config['offline']) {
+            $src = $this->config[$configName . '.src.cdn'];
+            $cdn = true;
+            $attributes = [];
+        }
+
+        if ($this->config[$configName . '.include_style']) {
+            $this->addStyles([$script]);
+        }
+
+        if (!is_array($src)) {
+            $scripts[] = ['src' => $src . $this->build, 'attributes' => $attributes];
+        } else {
+            foreach ($src as $s) {
+                $scripts[] = ['src' => $s . $this->build, 'attributes' => $attributes];
+            }
+        }
+
+        if (empty($src) &&
+            $cdn && $location === self::ASSETS_SCRIPT_POSITION_HEADER &&
+            isset($this->config[$configName . '.fallback'])
+        ) {
+            $scripts[] = $this->getFallbackScript($src, $configName);
+        }
+
+        return $scripts;
+    }
+
+    /**
+     * Fallback to local script if CDN fails
+     * @param $src
+     * @param $configName
+     * @return array
+     */
+    protected function getFallbackScript($src, $configName)
+    {
+        return [
+            'src'         => $src,
+            'fallback'    => $this->config[$configName . '.fallback'],
+            'fallbackURL' => $this->config[$configName . '.src.local'],
+        ];
+    }
+
+    /**
+     * @param $name
+     * @param string $type
+     * @return null|string
+     */
+    protected function itemToHtml($name, $type = 'style')
+    {
+        if (!in_array($type, ['style', 'script'])) {
+            return null;
+        }
+
+        $config = 'resources.stylesheets.' . $name;
+        if ($type === 'script') {
+            $config = 'resources.javascript.' . $name;
+        }
+
+        if (isset($this->config[$config])) {
+
+            $src = $this->config[$config . '.src.local'];
+            if ($this->config[$config . '.use_cdn'] && !$this->config['offline']) {
+                $src = $this->config[$config . '.src.cdn'];
+            }
+
+            if (!is_array($src)) {
+                $src = [$src];
+            }
+
+            $html = '';
+            foreach ($src as $item) {
+                $html .= $this->htmlBuilder->{$type}($item . $this->build, ['class' => 'hidden'])->toHtml();
+            }
+
+            return $html;
+        }
+
+        return null;
     }
 }

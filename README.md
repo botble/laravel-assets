@@ -56,52 +56,52 @@ and before `body` tag close:
 
 ## Methods
 
-### Add javascript
+### Add scripts
 
 ```php
-\Assets::addJavascript(['key-of-assets-in-config-file']);
+\Assets::addScripts(['key-of-assets-in-config-file']);
 ```
 
 Example:
 
 ```php
-\Assets::addJavascript(['app', 'bootstrap', 'jquery']);
+\Assets::addScripts(['app', 'bootstrap', 'jquery']);
 ```
 
-### Add stylesheets
+### Add styles
 
 ```php
-\Assets::addStylesheets(['key-of-assets-in-config-file']);
-```
-
-Example:
-
-```php
-\Assets::addStylesheets(['bootstrap', 'font-awesome']);
-```
-
-### Remove javascript
-
-```php
-\Assets::removeJavascript(['key-of-assets-in-config-file']);
+\Assets::addStyles(['key-of-assets-in-config-file']);
 ```
 
 Example:
 
 ```php
-\Assets::removeJavascript(['bootstrap']);
+\Assets::addStyles(['bootstrap', 'font-awesome']);
 ```
 
-### Remove stylesheets
+### Remove scripts
 
 ```php
-\Assets::removeStylesheets(['key-of-assets-in-config-file']);
+\Assets::removeScripts(['key-of-assets-in-config-file']);
 ```
 
 Example:
 
 ```php
-\Assets::removeStylesheets(['font-awesome']);
+\Assets::removeScripts(['bootstrap']);
+```
+
+### Remove styles
+
+```php
+\Assets::removeStyles(['key-of-assets-in-config-file']);
+```
+
+Example:
+
+```php
+\Assets::removeStyles(['font-awesome']);
 ```
 
 ### Others
