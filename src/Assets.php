@@ -375,7 +375,6 @@ class Assets
             $cdn &&
             $location === self::ASSETS_SCRIPT_POSITION_HEADER &&
             array_has($this->config, $configName.'.fallback')) {
-
             $scripts[] = $this->getFallbackScript($src, $configName);
         }
 
@@ -418,7 +417,6 @@ class Assets
         }
 
         if (array_has($this->config, $config)) {
-
             $src = array_get($this->config, $config.'.src.local');
 
             if (array_get($this->config, $config.'.use_cdn') && ! $this->config['offline']) {
