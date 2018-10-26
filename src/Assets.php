@@ -8,7 +8,6 @@ use Illuminate\Config\Repository;
 /**
  * Class Assets.
  *
- * @package Botble\Assets
  * @author Sang Nguyen
  * @since 22/07/2015 11:23 PM
  */
@@ -256,7 +255,6 @@ class Assets
         $this->styles = array_unique($this->styles);
 
         foreach ($this->styles as $style) {
-
             $configName = 'resources.styles.'.$style;
 
             if (array_has($this->config, $configName)) {
@@ -264,7 +262,7 @@ class Assets
 
                 $attributes = array_get($this->config, $configName.'.attributes', []);
 
-                if (array_get($this->config, $configName.'.use_cdn') && !$this->config['offline']) {
+                if (array_get($this->config, $configName.'.use_cdn') && ! $this->config['offline']) {
                     $src = array_get($this->config, $configName.'.src.cdn');
 
                     $attributes = [];
@@ -347,13 +345,13 @@ class Assets
     {
         $scripts = [];
 
-      $src = array_get($this->config, $configName.'.src.local');
+        $src = array_get($this->config, $configName.'.src.local');
 
         $cdn = false;
 
         $attributes = array_get($this->config, $configName.'.attributes', []);
 
-        if (array_get($this->config, $configName.'.use_cdn') && !$this->config['offline']) {
+        if (array_get($this->config, $configName.'.use_cdn') && ! $this->config['offline']) {
             $src = array_get($this->config, $configName.'.src.cdn');
 
             $cdn = true;
@@ -378,7 +376,7 @@ class Assets
             $location === self::ASSETS_SCRIPT_POSITION_HEADER &&
             array_has($this->config, $configName.'.fallback')) {
 
-          $scripts[] = $this->getFallbackScript($src, $configName);
+            $scripts[] = $this->getFallbackScript($src, $configName);
         }
 
         return $scripts;
@@ -423,7 +421,7 @@ class Assets
 
             $src = array_get($this->config, $config.'.src.local');
 
-            if (array_get($this->config, $config.'.use_cdn') && !$this->config['offline']) {
+            if (array_get($this->config, $config.'.use_cdn') && ! $this->config['offline']) {
                 $src = array_get($this->config, $config.'.src.cdn');
             }
 
