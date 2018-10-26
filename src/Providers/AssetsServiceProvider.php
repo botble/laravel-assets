@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 
 /**
  * Class AssetsServiceProvider
+ *
  * @package Botble\Assets
  * @author Sang Nguyen
  * @since 22/07/2015 11:23 PM
