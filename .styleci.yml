@@ -1,6 +1,4 @@
 preset: laravel
 
-linting: true
-
 disabled:
   concat_without_spaces
