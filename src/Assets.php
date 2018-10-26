@@ -6,7 +6,7 @@ use Collective\Html\HtmlBuilder;
 use Illuminate\Config\Repository;
 
 /**
- * Class Assets
+ * Class Assets.
  *
  * @package Botble\Assets
  * @author Sang Nguyen
@@ -73,7 +73,7 @@ class Assets
 
         $this->styles = $this->config['styles'];
 
-        $this->build = $this->config['enable_version'] ? '?v=' . $this->config['version'] : '';
+        $this->build = $this->config['enable_version'] ? '?v='.$this->config['version'] : '';
     }
 
     /**
@@ -85,7 +85,7 @@ class Assets
      */
     public function addScripts($assets)
     {
-        if (!is_array($assets)) {
+        if (! is_array($assets)) {
             $assets = [$assets];
         }
 
@@ -103,7 +103,7 @@ class Assets
      */
     public function addStyles($assets)
     {
-        if (!is_array($assets)) {
+        if (! is_array($assets)) {
             $assets = [$assets];
         }
 
@@ -121,14 +121,14 @@ class Assets
      */
     public function addStylesDirectly($assets)
     {
-        if (!is_array($assets)) {
+        if (! is_array($assets)) {
             $assets = func_get_args();
         }
 
         foreach ($assets as &$item) {
-            $item = $item . $this->build;
+            $item = $item.$this->build;
 
-            if (!in_array($item, $this->appendedStyles)) {
+            if (! in_array($item, $this->appendedStyles)) {
                 $this->appendedStyles[] = [
                     'src' => $item,
                     'attributes' => [],
@@ -149,14 +149,14 @@ class Assets
      */
     public function addScriptsDirectly($assets, $location = self::ASSETS_SCRIPT_POSITION_FOOTER)
     {
-        if (!is_array($assets)) {
+        if (! is_array($assets)) {
             $assets = func_get_args();
         }
 
         foreach ($assets as &$item) {
-            $item = $item . $this->build;
+            $item = $item.$this->build;
 
-            if (!in_array($item, $this->appendedScripts[$location])) {
+            if (! in_array($item, $this->appendedScripts[$location])) {
                 $this->appendedScripts[$location][] = [
                     'src'        => $item,
                     'attributes' => [],
@@ -176,7 +176,7 @@ class Assets
      */
     public function removeStyles($assets)
     {
-        if (!is_array($assets)) {
+        if (! is_array($assets)) {
             $assets = [$assets];
         }
 
@@ -196,7 +196,7 @@ class Assets
      */
     public function removeScripts($assets)
     {
-        if (!is_array($assets)) {
+        if (! is_array($assets)) {
             $assets = [$assets];
         }
 
@@ -221,10 +221,10 @@ class Assets
         $this->scripts = array_unique($this->scripts);
 
         foreach ($this->scripts as $script) {
-            $configName = 'resources.scripts.' . $script;
+            $configName = 'resources.scripts.'.$script;
 
             if (array_has($this->config, $configName)) {
-                if ($location !== array_get($this->config, $configName . '.location')) {
+                if ($location !== array_get($this->config, $configName.'.location')) {
                     continue; // Skip assets that don't match this location
                 }
 
@@ -249,30 +249,30 @@ class Assets
     public function getStyles($lastModules = [])
     {
         $styles = [];
-
-        if (!empty($lastModules)) {
+        if (! empty($lastModules)) {
             $this->styles = array_merge($this->styles, $lastModules);
         }
 
         $this->styles = array_unique($this->styles);
 
         foreach ($this->styles as $style) {
-            $configName = 'resources.styles.' . $style;
+
+            $configName = 'resources.styles.'.$style;
 
             if (array_has($this->config, $configName)) {
-                $src = array_get($this->config, $configName . '.src.local');
+                $src = array_get($this->config, $configName.'.src.local');
 
-                $attributes = array_get($this->config, $configName . '.attributes', []);
+                $attributes = array_get($this->config, $configName.'.attributes', []);
 
-                if (array_get($this->config, $configName . '.use_cdn') && !$this->config['offline']) {
-                    $src = array_get($this->config, $configName . '.src.cdn');
+                if (array_get($this->config, $configName.'.use_cdn') && !$this->config['offline']) {
+                    $src = array_get($this->config, $configName.'.src.cdn');
 
                     $attributes = [];
                 }
 
-                foreach ((array)$src as $s) {
+                foreach ((array) $src as $s) {
                     $styles[] = [
-                        'src'        => $s . $this->build,
+                        'src'        => $s.$this->build,
                         'attributes' => $attributes,
                     ];
                 }
@@ -347,37 +347,38 @@ class Assets
     {
         $scripts = [];
 
-        $src = array_get($this->config, $configName . '.src.local');
+      $src = array_get($this->config, $configName.'.src.local');
 
         $cdn = false;
 
-        $attributes = array_get($this->config, $configName . '.attributes', []);
+        $attributes = array_get($this->config, $configName.'.attributes', []);
 
-        if (array_get($this->config, $configName . '.use_cdn') && !$this->config['offline']) {
-            $src = array_get($this->config, $configName . '.src.cdn');
+        if (array_get($this->config, $configName.'.use_cdn') && !$this->config['offline']) {
+            $src = array_get($this->config, $configName.'.src.cdn');
 
             $cdn = true;
 
             $attributes = [];
         }
 
-        if (array_get($this->config, $configName . '.include_style')) {
+        if (array_get($this->config, $configName.'.include_style')) {
             $this->addStyles([$script]);
         }
 
-        if (!is_array($src)) {
-            $scripts[] = ['src' => $src . $this->build, 'attributes' => $attributes];
+        if (! is_array($src)) {
+            $scripts[] = ['src' => $src.$this->build, 'attributes' => $attributes];
         } else {
             foreach ($src as $s) {
-                $scripts[] = ['src' => $s . $this->build, 'attributes' => $attributes];
+                $scripts[] = ['src' => $s.$this->build, 'attributes' => $attributes];
             }
         }
 
         if (empty($src) &&
             $cdn &&
             $location === self::ASSETS_SCRIPT_POSITION_HEADER &&
-            array_has($this->config, $configName . '.fallback')) {
-            $scripts[] = $this->getFallbackScript($src, $configName);
+            array_has($this->config, $configName.'.fallback')) {
+
+          $scripts[] = $this->getFallbackScript($src, $configName);
         }
 
         return $scripts;
@@ -394,8 +395,8 @@ class Assets
     {
         return [
             'src'  => $src,
-            'fallback' => array_get($this->config, $configName . '.fallback'),
-            'fallbackURL' => array_get($this->config, $configName . '.src.local'),
+            'fallback' => array_get($this->config, $configName.'.fallback'),
+            'fallbackURL' => array_get($this->config, $configName.'.src.local'),
         ];
     }
 
@@ -408,37 +409,35 @@ class Assets
      */
     protected function itemToHtml($name, $type = 'style')
     {
-        if (!in_array($type, ['style', 'script'])) {
-            return null;
+        if (! in_array($type, ['style', 'script'])) {
+            return;
         }
 
-        $config = 'resources.styles.' . $name;
+        $config = 'resources.styles.'.$name;
 
         if ($type === 'script') {
-            $config = 'resources.scripts.' . $name;
+            $config = 'resources.scripts.'.$name;
         }
 
         if (array_has($this->config, $config)) {
 
-            $src = array_get($this->config, $config . '.src.local');
+            $src = array_get($this->config, $config.'.src.local');
 
-            if (array_get($this->config, $config . '.use_cdn') && !$this->config['offline']) {
-                $src = array_get($this->config, $config . '.src.cdn');
+            if (array_get($this->config, $config.'.use_cdn') && !$this->config['offline']) {
+                $src = array_get($this->config, $config.'.src.cdn');
             }
 
-            if (!is_array($src)) {
+            if (! is_array($src)) {
                 $src = [$src];
             }
 
             $html = '';
 
             foreach ($src as $item) {
-                $html .= $this->htmlBuilder->{$type}($item . $this->build, ['class' => 'hidden'])->toHtml();
+                $html .= $this->htmlBuilder->{$type}($item.$this->build, ['class' => 'hidden'])->toHtml();
             }
 
             return $html;
         }
-
-        return null;
     }
 }
