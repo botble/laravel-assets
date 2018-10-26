@@ -190,32 +190,26 @@ class Assets
     public function getJavascript($location = null, $version = true)
     {
         $scripts = [];
-        // get the final scripts need for page
         $this->javascript = array_unique($this->javascript);
-        foreach ($this->javascript as $js) {
-            $jsConfig = 'assets.resources.javascript.' . $js;
+        foreach ($this->javascript as $script) {
+            $configName = 'assets.resources.javascript.' . $script;
 
-            if ($this->config->has($jsConfig)) {
-                if (!empty($location) && $location != $this->config->get($jsConfig . '.location')) {
-                    // Skip assets that don't match this location
-                    continue;
+            if ($this->config->has($configName)) {
+                if (!empty($location) && $location != $this->config->get($configName . '.location')) {
+                    continue; // Skip assets that don't match this location
                 }
 
-                $src = $this->config->get($jsConfig . '.src.local');
+                $src = $this->config->get($configName . '.src.local');
                 $cdn = false;
-                if ($this->config->get($jsConfig . '.use_cdn') && !$this->config->get('assets.offline')) {
-                    $src = $this->config->get($jsConfig . '.src.cdn');
+                $attributes = $this->config->get($configName . '.attributes', []);
+                if ($this->config->get($configName . '.use_cdn') && !$this->config->get('assets.offline')) {
+                    $src = $this->config->get($configName . '.src.cdn');
                     $cdn = true;
+                    $attributes = [];
                 }
 
-                if ($this->config->get($jsConfig . '.include_style')) {
-                    $this->addStylesheets([$js]);
-                }
-
-                $attributes = $this->config->get($jsConfig . '.attributes', []);
-                if ($cdn === false) {
-                    array_forget($attributes, 'integrity');
-                    array_forget($attributes, 'crossorigin');
+                if ($this->config->get($configName . '.include_style')) {
+                    $this->addStylesheets([$script]);
                 }
 
                 $version = $version ? $this->build : '';
@@ -227,13 +221,13 @@ class Assets
                     }
                 }
 
-                if (empty($src) && $cdn && $location === 'top' && $this->config->has($jsConfig . '.fallback')) {
+                if (empty($src) && $cdn && $location === 'top' && $this->config->has($configName . '.fallback')) {
                     // Fallback to local script if CDN fails
-                    $fallback = $this->config->get($jsConfig . '.fallback');
+                    $fallback = $this->config->get($configName . '.fallback');
                     $scripts[] = [
                         'src'         => $src,
                         'fallback'    => $fallback,
-                        'fallbackURL' => $this->config->get($jsConfig . '.src.local'),
+                        'fallbackURL' => $this->config->get($configName . '.src.local'),
                     ];
                 }
             }
@@ -260,27 +254,19 @@ class Assets
         if (!empty($lastModules)) {
             $this->stylesheets = array_merge($this->stylesheets, $lastModules);
         }
-        // get the final scripts need for page
+
         $this->stylesheets = array_unique($this->stylesheets);
         foreach ($this->stylesheets as $style) {
-            if ($this->config->has('assets.resources.stylesheets.' . $style)) {
-                $src = $this->config->get('assets.resources.stylesheets.' . $style . '.src.local');
-                $cdn = false;
-                if ($this->config->get('assets.resources.stylesheets.' . $style . '.use_cdn') && !$this->config->get('assets.offline')) {
-                    $src = $this->config->get('assets.resources.stylesheets.' . $style . '.src.cdn');
-                    $cdn = true;
+            $configName = 'assets.resources.stylesheets.' . $style;
+            if ($this->config->has($configName)) {
+                $src = $this->config->get($configName . '.src.local');
+                $attributes = $this->config->get($configName . '.attributes', []);
+                if ($this->config->get($configName . '.use_cdn') && !$this->config->get('assets.offline')) {
+                    $src = $this->config->get($configName . '.src.cdn');
+                    $attributes = [];
                 }
 
-                $attributes = $this->config->get('assets.resources.stylesheets.' . $style . '.attributes', []);
-                if ($cdn === false) {
-                    array_forget($attributes, 'integrity');
-                    array_forget($attributes, 'crossorigin');
-                }
-
-                if (!is_array($src)) {
-                    $src = [$src];
-                }
-                foreach ($src as $s) {
+                foreach ((array)$src as $s) {
                     $stylesheets[] = [
                         'src'        => $s . ($version ? $this->build : ''),
                         'attributes' => $attributes,
@@ -289,9 +275,7 @@ class Assets
             }
         }
 
-        $stylesheets = array_merge($stylesheets, $this->appendedCss);
-
-        return $stylesheets;
+        return array_merge($stylesheets, $this->appendedCss);
     }
 
     /**
