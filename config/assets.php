@@ -2,17 +2,17 @@
 
 return [
     'offline' => env('ASSETS_OFFLINE', true),
-    'enable_version' => env('ASSETS_ENABLE_VERSION', true),
+    'enable_version' => env('ASSETS_ENABLE_VERSION', false),
     'version' => env('ASSETS_VERSION', time()),
-    'javascript' => [
+    'scripts' => [
         'modernizr',
         'app',
     ],
-    'stylesheets' => [
+    'styles' => [
         'bootstrap',
     ],
     'resources' => [
-        'javascript' => [
+        'scripts' => [
             'app' => [
                 'use_cdn' => false,
                 'location' => 'footer',
@@ -29,7 +29,7 @@ return [
                 ],
             ],
         ],
-        'stylesheets' => [
+        'styles' => [
             'bootstrap' => [
                 'use_cdn' => true,
                 'location' => 'header',

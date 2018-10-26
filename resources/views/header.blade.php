@@ -1,4 +1,4 @@
-@foreach ($stylesheets as $style)
+@foreach ($styles as $style)
     {!! app('html')->style($style['src'], $style['attributes']) !!}
 @endforeach
 
