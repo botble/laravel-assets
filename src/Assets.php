@@ -3,8 +3,8 @@
 namespace Botble\Assets;
 
 use Illuminate\Config\Repository;
-use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Support\HtmlString;
+use Illuminate\Contracts\Routing\UrlGenerator;
 
 /**
  * Class Assets.
@@ -472,7 +472,7 @@ class Assets
     }
 
     /**
-     * Transform the string to an Html serializable object
+     * Transform the string to an Html serializable object.
      *
      * @param $html
      *
