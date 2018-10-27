@@ -1,3 +1,3 @@
 @foreach ($bodyScripts as $script)
-    {!! app('html')->script($script['src'], $script['attributes']) !!}
+    {!! Assets::script($script['src'] . Assets::getBuildVersion(), $script['attributes']) !!}
 @endforeach

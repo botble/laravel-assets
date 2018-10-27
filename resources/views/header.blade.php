@@ -1,9 +1,9 @@
 @foreach ($styles as $style)
-    {!! app('html')->style($style['src'], $style['attributes']) !!}
+    {!! Assets::style($style['src'] . Assets::getBuildVersion(), $style['attributes']) !!}
 @endforeach
 
 @foreach ($headScripts as $script)
-    {!! app('html')->script($script['src'], $script['attributes']) !!}
+    {!! Assets::script($script['src'] . Assets::getBuildVersion(), $script['attributes']) !!}
     @if (!empty($script['fallback']))
         <script>window.{!! $script['fallback'] !!} || document.write('<script src="{{ $script['fallbackURL'] }}"><\/script>')</script>
     @endif

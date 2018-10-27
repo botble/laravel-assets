@@ -2,8 +2,9 @@
 
 namespace Botble\Assets;
 
-use Collective\Html\HtmlBuilder;
 use Illuminate\Config\Repository;
+use Illuminate\Contracts\Routing\UrlGenerator;
+use Illuminate\Support\HtmlString;
 
 /**
  * Class Assets.
@@ -18,9 +19,11 @@ class Assets
     protected $config;
 
     /**
-     * @var HtmlBuilder
+     * The URL generator instance.
+     *
+     * @var \Illuminate\Contracts\Routing\UrlGenerator
      */
-    protected $htmlBuilder;
+    protected $url;
 
     /**
      * @var array
@@ -58,19 +61,17 @@ class Assets
      * Assets constructor.
      *
      * @param  Repository $config
-     * @param  HtmlBuilder $htmlBuilder
+     * @param UrlGenerator $urlGenerator
      */
-    public function __construct(Repository $config, HtmlBuilder $htmlBuilder)
+    public function __construct(Repository $config, UrlGenerator $urlGenerator)
     {
         $this->config = $config->get('assets');
-
-        $this->htmlBuilder = $htmlBuilder;
 
         $this->scripts = $this->config['scripts'];
 
         $this->styles = $this->config['styles'];
 
-        $this->build = $this->config['enable_version'] ? '?v=' . $this->config['version'] : '';
+        $this->url = $urlGenerator;
     }
 
     /**
@@ -120,8 +121,6 @@ class Assets
         }
 
         foreach ($assets as &$item) {
-            $item = $item . $this->build;
-
             if (!in_array($item, $this->appendedStyles)) {
                 $this->appendedStyles[] = [
                     'src'        => $item,
@@ -147,8 +146,6 @@ class Assets
         }
 
         foreach ($assets as &$item) {
-            $item = $item . $this->build;
-
             if (!in_array($item, $this->appendedScripts[$location])) {
                 $this->appendedScripts[$location][] = [
                     'src'        => $item,
@@ -201,7 +198,7 @@ class Assets
     /**
      * Get All scripts in current module.
      *
-     * @param  string $location `top` or `bottom`
+     * @param  string $location `header` or `footer`
      * @return array
      */
     public function getScripts($location = null)
@@ -214,7 +211,7 @@ class Assets
             $configName = 'resources.scripts.' . $script;
 
             if (array_has($this->config, $configName)) {
-                if ($location !== array_get($this->config, $configName . '.location')) {
+                if (!empty($location) && $location !== array_get($this->config, $configName . '.location')) {
                     continue; // Skip assets that don't match this location
                 }
 
@@ -232,14 +229,14 @@ class Assets
     /**
      * Get All CSS in current module.
      *
-     * @param  array $lastModules Append last CSS to current module
+     * @param  array $lastStyles Append last CSS to current module
      * @return array
      */
-    public function getStyles($lastModules = [])
+    public function getStyles($lastStyles = [])
     {
         $styles = [];
-        if (!empty($lastModules)) {
-            $this->styles = array_merge($this->styles, $lastModules);
+        if (!empty($lastStyles)) {
+            $this->styles = array_merge($this->styles, $lastStyles);
         }
 
         $this->styles = array_unique($this->styles);
@@ -260,7 +257,7 @@ class Assets
 
                 foreach ((array)$src as $s) {
                     $styles[] = [
-                        'src'        => $s . $this->build,
+                        'src'        => $s,
                         'attributes' => $attributes,
                     ];
                 }
@@ -294,12 +291,13 @@ class Assets
     /**
      * Render assets to header.
      *
+     * @param array $lastStyles
      * @return string
      * @throws \Throwable
      */
-    public function renderHeader()
+    public function renderHeader($lastStyles = [])
     {
-        $styles = $this->getStyles(['core']);
+        $styles = $this->getStyles($lastStyles);
 
         $headScripts = $this->getScripts(self::ASSETS_SCRIPT_POSITION_HEADER);
 
@@ -322,9 +320,9 @@ class Assets
     /**
      * Get script item.
      *
-     * @param $location
-     * @param $configName
-     * @param $script
+     * @param string $location
+     * @param string $configName
+     * @param string $script
      * @return array
      */
     protected function getScriptItem($location, $configName, $script)
@@ -345,19 +343,15 @@ class Assets
             $attributes = [];
         }
 
-        if (array_get($this->config, $configName . '.include_style')) {
-            $this->addStyles([$script]);
-        }
-
         if (!is_array($src)) {
             $scripts[] = [
-                'src'        => $src . $this->build,
+                'src'        => $src,
                 'attributes' => $attributes,
             ];
         } else {
             foreach ($src as $s) {
                 $scripts[] = [
-                    'src'        => $s . $this->build,
+                    'src'        => $s,
                     'attributes' => $attributes,
                 ];
             }
@@ -368,6 +362,10 @@ class Assets
             $location === self::ASSETS_SCRIPT_POSITION_HEADER &&
             array_has($this->config, $configName . '.fallback')) {
             $scripts[] = $this->getFallbackScript($src, $configName);
+        }
+
+        if (array_get($this->config, $configName . '.include_style')) {
+            $this->addStyles([$script]);
         }
 
         return $scripts;
@@ -422,10 +420,116 @@ class Assets
             }
 
             foreach ($src as $item) {
-                $html .= $this->htmlBuilder->{$type}($item . $this->build, ['class' => 'hidden'])->toHtml();
+                $html .= $this->{$type}($item, ['class' => 'hidden'])->toHtml();
             }
         }
 
         return $html;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBuildVersion()
+    {
+        return $this->build = $this->config['enable_version'] ? '?v=' . $this->config['version'] : '';
+    }
+
+    /**
+     * Generate a link to a JavaScript file.
+     *
+     * @param string $url
+     * @param array $attributes
+     * @param bool $secure
+     *
+     * @return \Illuminate\Support\HtmlString
+     */
+    public function script($url, $attributes = [], $secure = null)
+    {
+        $attributes['src'] = $this->url->asset($url, $secure);
+
+        return $this->toHtmlString('<script' . $this->attributes($attributes) . '></script>');
+    }
+
+    /**
+     * Generate a link to a CSS file.
+     *
+     * @param string $url
+     * @param array $attributes
+     * @param bool $secure
+     *
+     * @return \Illuminate\Support\HtmlString
+     */
+    public function style($url, $attributes = [], $secure = null)
+    {
+        $defaults = ['media' => 'all', 'type' => 'text/css', 'rel' => 'stylesheet'];
+
+        $attributes = array_merge($defaults, $attributes);
+
+        $attributes['href'] = $this->url->asset($url, $secure);
+
+        return $this->toHtmlString('<link' . $this->attributes($attributes) . '>');
+    }
+
+    /**
+     * Transform the string to an Html serializable object
+     *
+     * @param $html
+     *
+     * @return \Illuminate\Support\HtmlString
+     */
+    protected function toHtmlString($html)
+    {
+        return new HtmlString($html);
+    }
+
+    /**
+     * Build an HTML attribute string from an array.
+     *
+     * @param array $attributes
+     *
+     * @return string
+     */
+    public function attributes($attributes)
+    {
+        $html = [];
+
+        foreach ((array)$attributes as $key => $value) {
+            $element = $this->attributeElement($key, $value);
+
+            if (!empty($element)) {
+                $html[] = $element;
+            }
+        }
+
+        return count($html) > 0 ? ' ' . implode(' ', $html) : '';
+    }
+
+    /**
+     * Build a single attribute element.
+     *
+     * @param string $key
+     * @param string $value
+     *
+     * @return string
+     */
+    protected function attributeElement($key, $value)
+    {
+        if (is_numeric($key)) {
+            return $value;
+        }
+
+        // Treat boolean attributes as HTML properties
+        if (is_bool($value) && $key !== 'value') {
+            return $value ? $key : '';
+        }
+
+        if (is_array($value) && $key === 'class') {
+            return 'class="' . implode(' ', $value) . '"';
+        }
+
+        if (!empty($value)) {
+            return $key . '="' . e($value, false) . '"';
+        }
     }
 }
