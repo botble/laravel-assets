@@ -261,7 +261,7 @@ class Assets
      *
      * @param string $name
      * @param string $type
-     * @return null|string
+     * @return string
      */
     protected function itemToHtml($name, $type = 'style')
     {
@@ -287,7 +287,7 @@ class Assets
     }
 
     /**
-     * @param $configName
+     * @param string $configName
      * @return string|array
      */
     protected function getSourceUrl($configName)
@@ -306,7 +306,7 @@ class Assets
     }
 
     /**
-     * @param $configName
+     * @param string $configName
      * @return bool
      */
     protected function isUsingCdn($configName)
@@ -315,7 +315,7 @@ class Assets
     }
 
     /**
-     * @param $configName
+     * @param string $configName
      * @return array
      */
     protected function getSource($configName, $location = null)
