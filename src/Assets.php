@@ -337,12 +337,12 @@ class Assets
 
     /**
      * @param $configName
-     * @return null|string|array
+     * @return string|array
      */
     protected function getSourceUrl($configName)
     {
         if (!array_has($this->config, $configName)) {
-            return null;
+            return '';
         }
 
         $src = array_get($this->config, $configName . '.src.local');
