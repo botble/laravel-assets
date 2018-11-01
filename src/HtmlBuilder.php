@@ -87,7 +87,7 @@ class HtmlBuilder
         $html = [];
 
         foreach ((array)$attributes as $key => $value) {
-            $element = $this->attributeElement($key, $value);
+            $element = is_numeric($key) ? $key : $this->attributeElement($key, $value);
 
             if (empty($element)) {
                 continue;
@@ -109,10 +109,6 @@ class HtmlBuilder
      */
     protected function attributeElement($key, $value)
     {
-        if (is_numeric($key)) {
-            return $value;
-        }
-
         // Treat boolean attributes as HTML properties
         if (is_bool($value) && $key !== 'value') {
             return $value ? $key : '';
