@@ -86,7 +86,7 @@ class Assets
     /**
      * Add Css to current module.
      *
-     * @param array $assets
+     * @param string[] $assets
      * @return $this
      */
     public function addStyles($assets)
@@ -316,6 +316,7 @@ class Assets
 
     /**
      * @param string $configName
+     * @param string $location
      * @return array
      */
     protected function getSource($configName, $location = null)
