@@ -182,10 +182,6 @@ class Assets
         foreach ($this->scripts as $script) {
             $configName = 'resources.scripts.' . $script;
 
-            if (!array_has($this->config, $configName)) {
-                continue;
-            }
-
             if (!empty($location) && $location !== array_get($this->config, $configName . '.location')) {
                 continue; // Skip assets that don't match this location
             }
@@ -218,20 +214,7 @@ class Assets
         foreach ($this->styles as $style) {
             $configName = 'resources.styles.' . $style;
 
-            if (!array_has($this->config, $configName)) {
-                continue;
-            }
-
-            $src = $this->getSourceUrl($configName);
-
-            $attributes = $this->isUsingCdn($configName) ? [] : array_get($this->config, $configName . '.attributes', []);
-
-            foreach ((array)$src as $s) {
-                $styles[] = [
-                    'src'        => $s,
-                    'attributes' => $attributes,
-                ];
-            }
+            $styles = array_merge($styles, $this->getSource($configName));
         }
 
         return array_merge($styles, $this->appendedStyles);
@@ -297,27 +280,7 @@ class Assets
      */
     protected function getScriptItem($location, $configName, $script)
     {
-        $scripts = [];
-
-        $isUsingCdn = $this->isUsingCdn($configName);
-
-        $attributes = $isUsingCdn ? [] : array_get($this->config, $configName . '.attributes', []);
-
-        $src = $this->getSourceUrl($configName);
-
-        foreach ((array)$src as $s) {
-            $scripts[] = [
-                'src'        => $s,
-                'attributes' => $attributes,
-            ];
-        }
-
-        if (empty($src) &&
-            $isUsingCdn &&
-            $location === self::ASSETS_SCRIPT_POSITION_HEADER &&
-            array_has($this->config, $configName . '.fallback')) {
-            $scripts[] = $this->getFallbackScript($src, $configName);
-        }
+        $scripts = $this->getSource($configName, $location);
 
         if (array_get($this->config, $configName . '.include_style')) {
             $this->addStyles([$script]);
@@ -374,10 +337,14 @@ class Assets
 
     /**
      * @param $configName
-     * @return mixed
+     * @return null|string|array
      */
     protected function getSourceUrl($configName)
     {
+        if (!array_has($this->config, $configName)) {
+            return null;
+        }
+
         $src = array_get($this->config, $configName . '.src.local');
 
         if ($this->isUsingCdn($configName)) {
@@ -394,6 +361,37 @@ class Assets
     protected function isUsingCdn($configName)
     {
         return array_get($this->config, $configName . '.use_cdn', false) && !$this->config['offline'];
+    }
+
+    /**
+     * @param $configName
+     * @return array
+     */
+    protected function getSource($configName, $location = null)
+    {
+        $isUsingCdn = $this->isUsingCdn($configName);
+
+        $attributes = $isUsingCdn ? [] : array_get($this->config, $configName . '.attributes', []);
+
+        $src = $this->getSourceUrl($configName);
+
+        $scripts = [];
+
+        foreach ((array)$src as $s) {
+            $scripts[] = [
+                'src'        => $s,
+                'attributes' => $attributes,
+            ];
+        }
+
+        if (empty($src) &&
+            $isUsingCdn &&
+            $location === self::ASSETS_SCRIPT_POSITION_HEADER &&
+            array_has($this->config, $configName . '.fallback')) {
+            $scripts[] = $this->getFallbackScript($src, $configName);
+        }
+
+        return $scripts;
     }
 
     /**
