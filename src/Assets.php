@@ -304,7 +304,7 @@ class Assets
         $attributes = $isUsingCdn ? [] : array_get($this->config, $configName . '.attributes', []);
 
         $src = $this->getSourceUrl($configName);
-        
+
         foreach ((array)$src as $s) {
             $scripts[] = [
                 'src'        => $s,
@@ -362,7 +362,7 @@ class Assets
         if (!array_has($this->config, $configName)) {
             return $html;
         }
-        
+
         $src = $this->getSourceUrl($configName);
 
         foreach ((array)$src as $item) {
@@ -383,7 +383,7 @@ class Assets
         if ($this->isUsingCdn($configName)) {
             $src = array_get($this->config, $configName . '.src.cdn');
         }
-        
+
         return $src;
     }
 
