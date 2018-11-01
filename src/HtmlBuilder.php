@@ -89,9 +89,11 @@ class HtmlBuilder
         foreach ((array)$attributes as $key => $value) {
             $element = $this->attributeElement($key, $value);
 
-            if (!empty($element)) {
-                $html[] = $element;
+            if (empty($element)) {
+                continue;
             }
+
+            $html[] = $element;
         }
 
         return count($html) > 0 ? ' ' . implode(' ', $html) : '';

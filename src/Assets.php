@@ -222,15 +222,9 @@ class Assets
                 continue;
             }
 
-            $src = array_get($this->config, $configName . '.src.local');
+            $src = $this->getSourceUrl($configName);
 
-            $attributes = array_get($this->config, $configName . '.attributes', []);
-
-            if (array_get($this->config, $configName . '.use_cdn') && !$this->config['offline']) {
-                $src = array_get($this->config, $configName . '.src.cdn');
-
-                $attributes = [];
-            }
+            $attributes = $this->isUsingCdn($configName) ? [] : array_get($this->config, $configName . '.attributes', []);
 
             foreach ((array)$src as $s) {
                 $styles[] = [
@@ -305,20 +299,12 @@ class Assets
     {
         $scripts = [];
 
-        $src = array_get($this->config, $configName . '.src.local');
+        $isUsingCdn = $this->isUsingCdn($configName);
 
-        $cdn = false;
+        $attributes = $isUsingCdn ? [] : array_get($this->config, $configName . '.attributes', []);
 
-        $attributes = array_get($this->config, $configName . '.attributes', []);
-
-        if (array_get($this->config, $configName . '.use_cdn') && !$this->config['offline']) {
-            $src = array_get($this->config, $configName . '.src.cdn');
-
-            $cdn = true;
-
-            $attributes = [];
-        }
-
+        $src = $this->getSourceUrl($configName);
+        
         foreach ((array)$src as $s) {
             $scripts[] = [
                 'src'        => $s,
@@ -327,7 +313,7 @@ class Assets
         }
 
         if (empty($src) &&
-            $cdn &&
+            $isUsingCdn &&
             $location === self::ASSETS_SCRIPT_POSITION_HEADER &&
             array_has($this->config, $configName . '.fallback')) {
             $scripts[] = $this->getFallbackScript($src, $configName);
@@ -371,25 +357,43 @@ class Assets
             return $html;
         }
 
-        $config = 'resources.styles.' . $name;
+        $configName = 'resources.' . $type . 's.' . $name;
 
-        if ($type === 'script') {
-            $config = 'resources.scripts.' . $name;
+        if (!array_has($this->config, $configName)) {
+            return $html;
         }
+        
+        $src = $this->getSourceUrl($configName);
 
-        if (array_has($this->config, $config)) {
-            $src = array_get($this->config, $config . '.src.local');
-
-            if (array_get($this->config, $config . '.use_cdn') && !$this->config['offline']) {
-                $src = array_get($this->config, $config . '.src.cdn');
-            }
-
-            foreach ((array)$src as $item) {
-                $html .= $this->{$type}($item, ['class' => 'hidden'])->toHtml();
-            }
+        foreach ((array)$src as $item) {
+            $html .= $this->{$type}($item, ['class' => 'hidden'])->toHtml();
         }
 
         return $html;
+    }
+
+    /**
+     * @param $configName
+     * @return mixed
+     */
+    protected function getSourceUrl($configName)
+    {
+        $src = array_get($this->config, $configName . '.src.local');
+
+        if ($this->isUsingCdn($configName)) {
+            $src = array_get($this->config, $configName . '.src.cdn');
+        }
+        
+        return $src;
+    }
+
+    /**
+     * @param $configName
+     * @return bool
+     */
+    protected function isUsingCdn($configName)
+    {
+        return array_get($this->config, $configName . '.use_cdn', false) && !$this->config['offline'];
     }
 
     /**
