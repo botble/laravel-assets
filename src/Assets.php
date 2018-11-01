@@ -189,11 +189,7 @@ class Assets
             $scripts = array_merge($scripts, $this->getScriptItem($location, $configName, $script));
         }
 
-        if (isset($this->appendedScripts[$location])) {
-            $scripts = array_merge($scripts, $this->appendedScripts[$location]);
-        }
-
-        return $scripts;
+        return array_merge($scripts, array_get($this->appendedScripts, $location, []));
     }
 
     /**
@@ -242,35 +238,6 @@ class Assets
     }
 
     /**
-     * Render assets to header.
-     *
-     * @param array $lastStyles
-     * @return string
-     * @throws \Throwable
-     */
-    public function renderHeader($lastStyles = [])
-    {
-        $styles = $this->getStyles($lastStyles);
-
-        $headScripts = $this->getScripts(self::ASSETS_SCRIPT_POSITION_HEADER);
-
-        return view('assets::header', compact('styles', 'headScripts'))->render();
-    }
-
-    /**
-     * Render assets to footer.
-     *
-     * @return string
-     * @throws \Throwable
-     */
-    public function renderFooter()
-    {
-        $bodyScripts = $this->getScripts(self::ASSETS_SCRIPT_POSITION_FOOTER);
-
-        return view('assets::footer', compact('bodyScripts'))->render();
-    }
-
-    /**
      * Get script item.
      *
      * @param string $location
@@ -287,22 +254,6 @@ class Assets
         }
 
         return $scripts;
-    }
-
-    /**
-     * Fallback to local script if CDN fails.
-     *
-     * @param string $src
-     * @param string $configName
-     * @return array
-     */
-    protected function getFallbackScript($src, $configName)
-    {
-        return [
-            'src'         => $src,
-            'fallback'    => array_get($this->config, $configName . '.fallback'),
-            'fallbackURL' => array_get($this->config, $configName . '.src.local'),
-        ];
     }
 
     /**
@@ -388,7 +339,11 @@ class Assets
             $isUsingCdn &&
             $location === self::ASSETS_SCRIPT_POSITION_HEADER &&
             array_has($this->config, $configName . '.fallback')) {
-            $scripts[] = $this->getFallbackScript($src, $configName);
+            $scripts[] = [
+                'src'         => $src,
+                'fallback'    => array_get($this->config, $configName . '.fallback'),
+                'fallbackURL' => array_get($this->config, $configName . '.src.local'),
+            ];
         }
 
         return $scripts;
@@ -408,5 +363,34 @@ class Assets
     public function getHtmlBuilder()
     {
         return $this->htmlBuilder;
+    }
+
+    /**
+     * Render assets to header.
+     *
+     * @param array $lastStyles
+     * @return string
+     * @throws \Throwable
+     */
+    public function renderHeader($lastStyles = [])
+    {
+        $styles = $this->getStyles($lastStyles);
+
+        $headScripts = $this->getScripts(self::ASSETS_SCRIPT_POSITION_HEADER);
+
+        return view('assets::header', compact('styles', 'headScripts'))->render();
+    }
+
+    /**
+     * Render assets to footer.
+     *
+     * @return string
+     * @throws \Throwable
+     */
+    public function renderFooter()
+    {
+        $bodyScripts = $this->getScripts(self::ASSETS_SCRIPT_POSITION_FOOTER);
+
+        return view('assets::footer', compact('bodyScripts'))->render();
     }
 }
