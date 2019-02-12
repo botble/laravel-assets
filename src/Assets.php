@@ -280,7 +280,7 @@ class Assets
         $src = $this->getSourceUrl($configName);
 
         foreach ((array)$src as $item) {
-            $html .= $this->{$type}($item, ['class' => 'hidden'])->toHtml();
+            $html .= $this->htmlBuilder->{$type}($item, ['class' => 'hidden'])->toHtml();
         }
 
         return $html;
