@@ -13,7 +13,7 @@ class AssetsTest extends TestCase
      */
     protected $assets;
 
-    public function setUp()
+    protected function setUp()
     {
         $this->assets = Mockery::mock(Assets::class);
     }
