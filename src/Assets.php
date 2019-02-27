@@ -3,6 +3,7 @@
 namespace Botble\Assets;
 
 use Illuminate\Config\Repository;
+use Illuminate\Support\Arr;
 
 /**
  * Class Assets.
@@ -146,7 +147,7 @@ class Assets
     public function removeStyles($assets)
     {
         foreach ((array)$assets as $rem) {
-            array_forget($this->styles, array_search($rem, $this->styles));
+            Arr::forget($this->styles, array_search($rem, $this->styles));
         }
 
         return $this;
@@ -161,7 +162,7 @@ class Assets
     public function removeScripts($assets)
     {
         foreach ((array)$assets as $rem) {
-            array_forget($this->scripts, array_search($rem, $this->scripts));
+            Arr::forget($this->scripts, array_search($rem, $this->scripts));
         }
 
         return $this;
@@ -182,14 +183,14 @@ class Assets
         foreach ($this->scripts as $script) {
             $configName = 'resources.scripts.' . $script;
 
-            if (!empty($location) && $location !== array_get($this->config, $configName . '.location')) {
+            if (!empty($location) && $location !== Arr::get($this->config, $configName . '.location')) {
                 continue; // Skip assets that don't match this location
             }
 
             $scripts = array_merge($scripts, $this->getScriptItem($location, $configName, $script));
         }
 
-        return array_merge($scripts, array_get($this->appendedScripts, $location, []));
+        return array_merge($scripts, Arr::get($this->appendedScripts, $location, []));
     }
 
     /**
@@ -249,7 +250,7 @@ class Assets
     {
         $scripts = $this->getSource($configName, $location);
 
-        if (array_get($this->config, $configName . '.include_style')) {
+        if (Arr::get($this->config, $configName . '.include_style')) {
             $this->addStyles([$script]);
         }
 
@@ -273,7 +274,7 @@ class Assets
 
         $configName = 'resources.' . $type . 's.' . $name;
 
-        if (!array_has($this->config, $configName)) {
+        if (!Arr::has($this->config, $configName)) {
             return $html;
         }
 
@@ -292,14 +293,14 @@ class Assets
      */
     protected function getSourceUrl($configName)
     {
-        if (!array_has($this->config, $configName)) {
+        if (!Arr::has($this->config, $configName)) {
             return '';
         }
 
-        $src = array_get($this->config, $configName . '.src.local');
+        $src = Arr::get($this->config, $configName . '.src.local');
 
         if ($this->isUsingCdn($configName)) {
-            $src = array_get($this->config, $configName . '.src.cdn');
+            $src = Arr::get($this->config, $configName . '.src.cdn');
         }
 
         return $src;
@@ -311,7 +312,7 @@ class Assets
      */
     protected function isUsingCdn($configName)
     {
-        return array_get($this->config, $configName . '.use_cdn', false) && !$this->config['offline'];
+        return Arr::get($this->config, $configName . '.use_cdn', false) && !$this->config['offline'];
     }
 
     /**
@@ -323,7 +324,7 @@ class Assets
     {
         $isUsingCdn = $this->isUsingCdn($configName);
 
-        $attributes = $isUsingCdn ? [] : array_get($this->config, $configName . '.attributes', []);
+        $attributes = $isUsingCdn ? [] : Arr::get($this->config, $configName . '.attributes', []);
 
         $src = $this->getSourceUrl($configName);
 
@@ -339,11 +340,11 @@ class Assets
         if (empty($src) &&
             $isUsingCdn &&
             $location === self::ASSETS_SCRIPT_POSITION_HEADER &&
-            array_has($this->config, $configName . '.fallback')) {
+            Arr::has($this->config, $configName . '.fallback')) {
             $scripts[] = [
                 'src'         => $src,
-                'fallback'    => array_get($this->config, $configName . '.fallback'),
-                'fallbackURL' => array_get($this->config, $configName . '.src.local'),
+                'fallback'    => Arr::get($this->config, $configName . '.fallback'),
+                'fallbackURL' => Arr::get($this->config, $configName . '.src.local'),
             ];
         }
 
