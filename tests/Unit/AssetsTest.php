@@ -13,12 +13,12 @@ class AssetsTest extends TestCase
      */
     protected $assets;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->assets = Mockery::mock(Assets::class);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         Mockery::close();
     }
