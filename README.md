@@ -45,13 +45,13 @@ php artisan vendor:publish --provider="Botble\Assets\Providers\AssetsServiceProv
 Add to your master layout view, in `head` tag:
 
 ```php
-{!! \Assets::renderHeader(); !!}
+{!! \Assets::renderHeader() !!}
 ```
 
 and before `body` tag close:
 
 ```php
-{!! \Assets::renderFooter(); !!}
+{!! \Assets::renderFooter() !!}
 ```
 
 ## Methods
@@ -106,7 +106,7 @@ Example:
 
 ### Others
 
-- Set version for assets. Add to .env
+- Set version for assets. Add to `.env`
 
 ```bash
 ASSETS_VERSION=1.0
