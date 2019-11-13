@@ -2,8 +2,8 @@
 
 namespace Botble\Assets;
 
-use Illuminate\Support\HtmlString;
 use Illuminate\Contracts\Routing\UrlGenerator;
+use Illuminate\Support\HtmlString;
 
 class HtmlBuilder
 {
@@ -30,12 +30,12 @@ class HtmlBuilder
      * @param array $attributes
      * @param bool $secure
      *
-     * @return \Illuminate\Support\HtmlString
+     * @return HtmlString|string
      */
     public function script($url, $attributes = [], $secure = null)
     {
         if (!$url) {
-            return null;
+            return '';
         }
 
         $attributes['src'] = $this->url->asset($url, $secure);
@@ -50,12 +50,12 @@ class HtmlBuilder
      * @param array $attributes
      * @param bool $secure
      *
-     * @return \Illuminate\Support\HtmlString
+     * @return HtmlString|string
      */
     public function style($url, $attributes = [], $secure = null)
     {
         if (!$url) {
-            return null;
+            return '';
         }
 
         $defaults = [

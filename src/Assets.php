@@ -2,8 +2,8 @@
 
 namespace Botble\Assets;
 
-use Illuminate\Support\Arr;
 use Illuminate\Config\Repository;
+use Illuminate\Support\Arr;
 
 /**
  * Class Assets.
