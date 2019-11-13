@@ -34,6 +34,10 @@ class HtmlBuilder
      */
     public function script($url, $attributes = [], $secure = null)
     {
+        if (!$url) {
+            return null;
+        }
+
         $attributes['src'] = $this->url->asset($url, $secure);
 
         return $this->toHtmlString('<script' . $this->attributes($attributes) . '></script>');
@@ -50,6 +54,10 @@ class HtmlBuilder
      */
     public function style($url, $attributes = [], $secure = null)
     {
+        if (!$url) {
+            return null;
+        }
+
         $defaults = [
             'media' => 'all',
             'type'  => 'text/css',
@@ -61,18 +69,6 @@ class HtmlBuilder
         $attributes['href'] = $this->url->asset($url, $secure);
 
         return $this->toHtmlString('<link' . $this->attributes($attributes) . '>');
-    }
-
-    /**
-     * Transform the string to an Html serializable object.
-     *
-     * @param $html
-     *
-     * @return \Illuminate\Support\HtmlString
-     */
-    protected function toHtmlString($html)
-    {
-        return new HtmlString($html);
     }
 
     /**
@@ -97,6 +93,18 @@ class HtmlBuilder
         }
 
         return count($html) > 0 ? ' ' . implode(' ', $html) : '';
+    }
+
+    /**
+     * Transform the string to an Html serializable object.
+     *
+     * @param $html
+     *
+     * @return \Illuminate\Support\HtmlString
+     */
+    protected function toHtmlString($html)
+    {
+        return new HtmlString($html);
     }
 
     /**
