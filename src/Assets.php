@@ -107,7 +107,7 @@ class Assets
     {
         foreach ((array)$assets as &$item) {
             if (!in_array($item, $this->appendedStyles)) {
-                $this->appendedStyles[] = [
+                $this->appendedStyles[$item] = [
                     'src'        => $item,
                     'attributes' => [],
                 ];
@@ -128,7 +128,7 @@ class Assets
     {
         foreach ((array)$assets as &$item) {
             if (!in_array($item, $this->appendedScripts[$location])) {
-                $this->appendedScripts[$location][] = [
+                $this->appendedScripts[$location][$item] = [
                     'src'        => $item,
                     'attributes' => [],
                 ];
