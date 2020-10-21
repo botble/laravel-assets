@@ -146,8 +146,17 @@ class Assets
      */
     public function removeStyles($assets)
     {
+        if (empty($this->styles)) {
+            return $this;
+        }
+
         foreach ((array)$assets as $rem) {
-            Arr::forget($this->styles, array_search($rem, $this->styles));
+            $index = array_search($rem, $this->styles);
+            if ($index === false) {
+                continue;
+            }
+
+            Arr::forget($this->styles, $index);
         }
 
         return $this;
@@ -161,8 +170,17 @@ class Assets
      */
     public function removeScripts($assets)
     {
+        if (empty($this->scripts)) {
+            return $this;
+        }
+
         foreach ((array)$assets as $rem) {
-            Arr::forget($this->scripts, array_search($rem, $this->scripts));
+            $index = array_search($rem, $this->scripts);
+            if ($index === false) {
+                continue;
+            }
+
+            Arr::forget($this->scripts, $index);
         }
 
         return $this;
