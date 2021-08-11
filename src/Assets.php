@@ -226,10 +226,12 @@ class Assets
 
         $this->styles = array_unique($this->styles);
 
-        foreach ($this->styles as $style) {
+        foreach ($this->styles as $key => $style) {
             $configName = 'resources.styles.' . $style;
 
-            $styles = array_merge($styles, $this->getSource($configName));
+            $source = $this->getSource($configName);
+
+            $styles = array_merge($styles, $source);
         }
 
         return array_merge($styles, $this->appendedStyles);
@@ -349,6 +351,10 @@ class Assets
         $scripts = [];
 
         foreach ((array)$src as $s) {
+            if (!$s) {
+                continue;
+            }
+
             $scripts[] = [
                 'src'        => $s,
                 'attributes' => $attributes,
