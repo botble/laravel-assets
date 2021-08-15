@@ -106,6 +106,8 @@ class Assets
     public function addStylesDirectly($assets)
     {
         foreach ((array)$assets as &$item) {
+            $item = ltrim(trim($item), '/');
+            
             if (!in_array($item, $this->appendedStyles)) {
                 $this->appendedStyles[$item] = [
                     'src'        => $item,
@@ -127,6 +129,8 @@ class Assets
     public function addScriptsDirectly($assets, $location = self::ASSETS_SCRIPT_POSITION_FOOTER)
     {
         foreach ((array)$assets as &$item) {
+            $item = ltrim(trim($item), '/');
+
             if (!in_array($item, $this->appendedScripts[$location])) {
                 $this->appendedScripts[$location][$item] = [
                     'src'        => $item,
