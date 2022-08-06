@@ -57,8 +57,8 @@ class Assets
     /**
      * Assets constructor.
      *
-     * @param Repository $config
-     * @param HtmlBuilder $htmlBuilder
+     * @param  Repository  $config
+     * @param  HtmlBuilder  $htmlBuilder
      */
     public function __construct(Repository $config, HtmlBuilder $htmlBuilder)
     {
@@ -74,7 +74,7 @@ class Assets
     /**
      * Add scripts to current module.
      *
-     * @param array $assets
+     * @param  array  $assets
      * @return $this
      */
     public function addScripts($assets)
@@ -87,7 +87,7 @@ class Assets
     /**
      * Add Css to current module.
      *
-     * @param string[] $assets
+     * @param  string[]  $assets
      * @return $this
      */
     public function addStyles($assets)
@@ -100,14 +100,14 @@ class Assets
     /**
      * Add styles directly.
      *
-     * @param array|string $assets
+     * @param  array|string  $assets
      * @return $this
      */
     public function addStylesDirectly($assets)
     {
         foreach ((array)$assets as &$item) {
             $item = ltrim(trim($item), '/');
-            
+
             if (!in_array($item, $this->appendedStyles)) {
                 $this->appendedStyles[$item] = [
                     'src'        => $item,
@@ -122,8 +122,8 @@ class Assets
     /**
      * Add scripts directly.
      *
-     * @param string|array $assets
-     * @param string $location
+     * @param  string|array $assets
+     * @param  string $location
      * @return $this
      */
     public function addScriptsDirectly($assets, $location = self::ASSETS_SCRIPT_POSITION_FOOTER)
@@ -145,7 +145,7 @@ class Assets
     /**
      * Remove Css to current module.
      *
-     * @param array $assets
+     * @param  array  $assets
      * @return $this
      */
     public function removeStyles($assets)
@@ -169,7 +169,7 @@ class Assets
     /**
      * Add scripts.
      *
-     * @param array $assets
+     * @param  array  $assets
      * @return $this
      */
     public function removeScripts($assets)
@@ -193,13 +193,15 @@ class Assets
     /**
      * Remove script/style items directly.
      *
-     * @param array|string $assets
-     * @param string|null $location
+     * @param  array|string  $assets
+     * @param  string|null $location `header` or `footer`
      * @return $this
      */
     public function removeItemDirectly($assets, ?string $location = null)
     {
         foreach ((array)$assets as $item) {
+            $item = ltrim(trim($item), '/');
+
             if ($location && in_array($location, [self::ASSETS_SCRIPT_POSITION_HEADER, self::ASSETS_SCRIPT_POSITION_FOOTER])) {
                 Arr::forget($this->appendedScripts[$location], $item);
             } else {
@@ -214,7 +216,7 @@ class Assets
     /**
      * Get All scripts in current module.
      *
-     * @param string $location `header` or `footer`
+     * @param  string  $location `header` or `footer`
      * @return array
      */
     public function getScripts($location = null)
@@ -239,7 +241,7 @@ class Assets
     /**
      * Get All CSS in current module.
      *
-     * @param array $lastStyles Append last CSS to current module
+     * @param  array  $lastStyles Append last CSS to current module
      * @return array
      */
     public function getStyles($lastStyles = [])
@@ -263,8 +265,8 @@ class Assets
     /**
      * Convert script to html.
      *
-     * @param string $name
-     * @return  string|null
+     * @param  string  $name
+     * @return string|null
      */
     public function scriptToHtml($name)
     {
@@ -274,7 +276,7 @@ class Assets
     /**
      * Convert style to html.
      *
-     * @param string $name
+     * @param  string  $name
      */
     public function styleToHtml($name)
     {
@@ -284,9 +286,9 @@ class Assets
     /**
      * Get script item.
      *
-     * @param string $location
-     * @param string $configName
-     * @param string $script
+     * @param  string  $location
+     * @param  string  $configName
+     * @param  string  $script
      * @return array
      */
     protected function getScriptItem($location, $configName, $script)
@@ -303,8 +305,8 @@ class Assets
     /**
      * Convert item to html.
      *
-     * @param string $name
-     * @param string $type
+     * @param  string  $name
+     * @param  string  $type
      * @return string
      */
     protected function itemToHtml($name, $type = 'style')
@@ -331,7 +333,7 @@ class Assets
     }
 
     /**
-     * @param string $configName
+     * @param  string  $configName
      * @return string|array
      */
     protected function getSourceUrl($configName)
@@ -350,7 +352,7 @@ class Assets
     }
 
     /**
-     * @param string $configName
+     * @param  string  $configName
      * @return bool
      */
     protected function isUsingCdn($configName)
@@ -359,8 +361,8 @@ class Assets
     }
 
     /**
-     * @param string $configName
-     * @param string $location
+     * @param  string  $configName
+     * @param  string  $location
      * @return array
      */
     protected function getSource($configName, $location = null)
@@ -417,8 +419,9 @@ class Assets
     /**
      * Render assets to header.
      *
-     * @param array $lastStyles
+     * @param  array  $lastStyles
      * @return string
+     * 
      * @throws \Throwable
      */
     public function renderHeader($lastStyles = [])
@@ -434,6 +437,7 @@ class Assets
      * Render assets to footer.
      *
      * @return string
+     * 
      * @throws \Throwable
      */
     public function renderFooter()
