@@ -191,6 +191,27 @@ class Assets
     }
 
     /**
+     * Remove script/style items directly.
+     *
+     * @param array|string $assets
+     * @param string|null $location
+     * @return $this
+     */
+    public function removeItemDirectly($assets, ?string $location = null)
+    {
+        foreach ((array)$assets as $item) {
+            if ($location && in_array($location, [self::ASSETS_SCRIPT_POSITION_HEADER, self::ASSETS_SCRIPT_POSITION_FOOTER])) {
+                Arr::forget($this->appendedScripts[$location], $item);
+            } else {
+                Arr::forget($this->appendedScripts[self::ASSETS_SCRIPT_POSITION_HEADER], $item);
+                Arr::forget($this->appendedScripts[self::ASSETS_SCRIPT_POSITION_FOOTER], $item);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * Get All scripts in current module.
      *
      * @param string $location `header` or `footer`
