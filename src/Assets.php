@@ -122,8 +122,8 @@ class Assets
     /**
      * Add scripts directly.
      *
-     * @param  string|array $assets
-     * @param  string $location
+     * @param  string|array  $assets
+     * @param  string  $location
      * @return $this
      */
     public function addScriptsDirectly($assets, $location = self::ASSETS_SCRIPT_POSITION_FOOTER)
@@ -194,7 +194,7 @@ class Assets
      * Remove script/style items directly.
      *
      * @param  array|string  $assets
-     * @param  string|null $location `header` or `footer`
+     * @param  string|null  $location  `header` or `footer`
      * @return $this
      */
     public function removeItemDirectly($assets, ?string $location = null)
@@ -216,7 +216,7 @@ class Assets
     /**
      * Get All scripts in current module.
      *
-     * @param  string  $location `header` or `footer`
+     * @param  string  $location  `header` or `footer`
      * @return array
      */
     public function getScripts($location = null)
@@ -241,7 +241,7 @@ class Assets
     /**
      * Get All CSS in current module.
      *
-     * @param  array  $lastStyles Append last CSS to current module
+     * @param  array  $lastStyles  Append last CSS to current module
      * @return array
      */
     public function getStyles($lastStyles = [])
@@ -421,7 +421,7 @@ class Assets
      *
      * @param  array  $lastStyles
      * @return string
-     * 
+     *
      * @throws \Throwable
      */
     public function renderHeader($lastStyles = [])
@@ -437,7 +437,7 @@ class Assets
      * Render assets to footer.
      *
      * @return string
-     * 
+     *
      * @throws \Throwable
      */
     public function renderFooter()
