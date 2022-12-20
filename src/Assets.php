@@ -6,60 +6,31 @@ use Illuminate\Config\Repository;
 use Illuminate\Support\Arr;
 
 /**
- * Class Assets.
- *
  * @since 22/07/2015 11:23 PM
  */
 class Assets
 {
-    /**
-     * @var Repository
-     */
     protected $config;
 
-    /**
-     * @var HtmlBuilder
-     */
     protected $htmlBuilder;
 
-    /**
-     * @var array
-     */
     protected $scripts = [];
 
-    /**
-     * @var array
-     */
     protected $styles = [];
 
-    /**
-     * @var array
-     */
     protected $appendedScripts = [
         'header' => [],
         'footer' => [],
     ];
 
-    /**
-     * @var array
-     */
     protected $appendedStyles = [];
 
-    /**
-     * @var string
-     */
     protected $build = '';
 
-    const ASSETS_SCRIPT_POSITION_HEADER = 'header';
+    public const ASSETS_SCRIPT_POSITION_HEADER = 'header';
 
-    const ASSETS_SCRIPT_POSITION_FOOTER = 'footer';
+    public const ASSETS_SCRIPT_POSITION_FOOTER = 'footer';
 
-    /**
-     * Assets constructor.
-     *
-     * @param  Repository  $config
-     * @param  HtmlBuilder  $htmlBuilder
-     */
     public function __construct(Repository $config, HtmlBuilder $htmlBuilder)
     {
         $this->config = $config->get('assets');
@@ -74,10 +45,9 @@ class Assets
     /**
      * Add scripts to current module.
      *
-     * @param  array  $assets
-     * @return $this
+     * @param  string|array  $assets
      */
-    public function addScripts($assets)
+    public function addScripts($assets): self
     {
         $this->scripts = array_merge($this->scripts, (array)$assets);
 
@@ -87,10 +57,9 @@ class Assets
     /**
      * Add Css to current module.
      *
-     * @param  string[]  $assets
-     * @return $this
+     * @param  string|array  $assets
      */
-    public function addStyles($assets)
+    public function addStyles($assets): self
     {
         $this->styles = array_merge($this->styles, (array)$assets);
 
@@ -101,16 +70,15 @@ class Assets
      * Add styles directly.
      *
      * @param  array|string  $assets
-     * @return $this
      */
-    public function addStylesDirectly($assets)
+    public function addStylesDirectly($assets): self
     {
         foreach ((array)$assets as &$item) {
             $item = ltrim(trim($item), '/');
 
-            if (!in_array($item, $this->appendedStyles)) {
+            if (! in_array($item, $this->appendedStyles)) {
                 $this->appendedStyles[$item] = [
-                    'src'        => $item,
+                    'src' => $item,
                     'attributes' => [],
                 ];
             }
@@ -123,17 +91,15 @@ class Assets
      * Add scripts directly.
      *
      * @param  string|array  $assets
-     * @param  string  $location
-     * @return $this
      */
-    public function addScriptsDirectly($assets, $location = self::ASSETS_SCRIPT_POSITION_FOOTER)
+    public function addScriptsDirectly($assets, string $location = self::ASSETS_SCRIPT_POSITION_FOOTER): self
     {
         foreach ((array)$assets as &$item) {
             $item = ltrim(trim($item), '/');
 
-            if (!in_array($item, $this->appendedScripts[$location])) {
+            if (! in_array($item, $this->appendedScripts[$location])) {
                 $this->appendedScripts[$location][$item] = [
-                    'src'        => $item,
+                    'src' => $item,
                     'attributes' => [],
                 ];
             }
@@ -143,12 +109,11 @@ class Assets
     }
 
     /**
-     * Remove Css to current module.
+     * Remove CSS from current module.
      *
-     * @param  array  $assets
-     * @return $this
+     * @param  string|array  $assets
      */
-    public function removeStyles($assets)
+    public function removeStyles($assets): self
     {
         if (empty($this->styles)) {
             return $this;
@@ -167,12 +132,11 @@ class Assets
     }
 
     /**
-     * Add scripts.
+     * Remove scripts.
      *
-     * @param  array  $assets
-     * @return $this
+     * @param  string|array  $assets
      */
-    public function removeScripts($assets)
+    public function removeScripts($assets): self
     {
         if (empty($this->scripts)) {
             return $this;
@@ -191,13 +155,10 @@ class Assets
     }
 
     /**
-     * Remove script/style items directly.
-     *
-     * @param  array|string  $assets
-     * @param  string|null  $location  `header` or `footer`
-     * @return $this
+     * Remove script/style items directly based on location (`header` or `footer`)
+     * @param  string|array  $assets
      */
-    public function removeItemDirectly($assets, ?string $location = null)
+    public function removeItemDirectly($assets, ?string $location = null): self
     {
         foreach ((array)$assets as $item) {
             $item = ltrim(trim($item), '/');
@@ -214,12 +175,9 @@ class Assets
     }
 
     /**
-     * Get All scripts in current module.
-     *
-     * @param  string  $location  `header` or `footer`
-     * @return array
+     * Get All scripts in current module based on location (`header` or `footer`)
      */
-    public function getScripts($location = null)
+    public function getScripts(?string $location = null): array
     {
         $scripts = [];
 
@@ -228,7 +186,7 @@ class Assets
         foreach ($this->scripts as $script) {
             $configName = 'resources.scripts.' . $script;
 
-            if (!empty($location) && $location !== Arr::get($this->config, $configName . '.location')) {
+            if (! empty($location) && $location !== Arr::get($this->config, $configName . '.location')) {
                 continue; // Skip assets that don't match this location
             }
 
@@ -239,15 +197,12 @@ class Assets
     }
 
     /**
-     * Get All CSS in current module.
-     *
-     * @param  array  $lastStyles  Append last CSS to current module
-     * @return array
+     * Get All CSS in current module. Append last CSS to current module
      */
-    public function getStyles($lastStyles = [])
+    public function getStyles(array $lastStyles = []): array
     {
         $styles = [];
-        if (!empty($lastStyles)) {
+        if (! empty($lastStyles)) {
             $this->styles = array_merge($this->styles, $lastStyles);
         }
 
@@ -264,34 +219,24 @@ class Assets
 
     /**
      * Convert script to html.
-     *
-     * @param  string  $name
-     * @return string|null
      */
-    public function scriptToHtml($name)
+    public function scriptToHtml(string $name): ?string
     {
         return $this->itemToHtml($name, 'script');
     }
 
     /**
      * Convert style to html.
-     *
-     * @param  string  $name
      */
-    public function styleToHtml($name)
+    public function styleToHtml(string $name): ?string
     {
-        return $this->itemToHtml($name, 'style');
+        return $this->itemToHtml($name);
     }
 
     /**
      * Get script item.
-     *
-     * @param  string  $location
-     * @param  string  $configName
-     * @param  string  $script
-     * @return array
      */
-    protected function getScriptItem($location, $configName, $script)
+    protected function getScriptItem(string $location, string $configName, string $script): array
     {
         $scripts = $this->getSource($configName, $location);
 
@@ -304,22 +249,18 @@ class Assets
 
     /**
      * Convert item to html.
-     *
-     * @param  string  $name
-     * @param  string  $type
-     * @return string
      */
-    protected function itemToHtml($name, $type = 'style')
+    protected function itemToHtml(string $name, string $type = 'style'): string
     {
         $html = '';
 
-        if (!in_array($type, ['style', 'script'])) {
+        if (! in_array($type, ['style', 'script'])) {
             return $html;
         }
 
         $configName = 'resources.' . $type . 's.' . $name;
 
-        if (!Arr::has($this->config, $configName)) {
+        if (! Arr::has($this->config, $configName)) {
             return $html;
         }
 
@@ -333,12 +274,11 @@ class Assets
     }
 
     /**
-     * @param  string  $configName
      * @return string|array
      */
-    protected function getSourceUrl($configName)
+    protected function getSourceUrl(string $configName)
     {
-        if (!Arr::has($this->config, $configName)) {
+        if (! Arr::has($this->config, $configName)) {
             return '';
         }
 
@@ -351,21 +291,12 @@ class Assets
         return $src;
     }
 
-    /**
-     * @param  string  $configName
-     * @return bool
-     */
-    protected function isUsingCdn($configName)
+    protected function isUsingCdn(string $configName): bool
     {
-        return Arr::get($this->config, $configName . '.use_cdn', false) && !$this->config['offline'];
+        return Arr::get($this->config, $configName . '.use_cdn', false) && ! $this->config['offline'];
     }
 
-    /**
-     * @param  string  $configName
-     * @param  string  $location
-     * @return array
-     */
-    protected function getSource($configName, $location = null)
+    protected function getSource(string $configName, ?string $location = null): array
     {
         $isUsingCdn = $this->isUsingCdn($configName);
 
@@ -376,12 +307,12 @@ class Assets
         $scripts = [];
 
         foreach ((array)$src as $s) {
-            if (!$s) {
+            if (! $s) {
                 continue;
             }
 
             $scripts[] = [
-                'src'        => $s,
+                'src' => $s,
                 'attributes' => $attributes,
             ];
         }
@@ -391,8 +322,8 @@ class Assets
             $location === self::ASSETS_SCRIPT_POSITION_HEADER &&
             Arr::has($this->config, $configName . '.fallback')) {
             $scripts[] = [
-                'src'         => $src,
-                'fallback'    => Arr::get($this->config, $configName . '.fallback'),
+                'src' => $src,
+                'fallback' => Arr::get($this->config, $configName . '.fallback'),
                 'fallbackURL' => Arr::get($this->config, $configName . '.src.local'),
             ];
         }
@@ -400,31 +331,20 @@ class Assets
         return $scripts;
     }
 
-    /**
-     * @return string
-     */
-    public function getBuildVersion()
+    public function getBuildVersion(): string
     {
         return $this->build = $this->config['enable_version'] ? '?v=' . $this->config['version'] : '';
     }
 
-    /**
-     * @return HtmlBuilder
-     */
-    public function getHtmlBuilder()
+    public function getHtmlBuilder(): HtmlBuilder
     {
         return $this->htmlBuilder;
     }
 
     /**
      * Render assets to header.
-     *
-     * @param  array  $lastStyles
-     * @return string
-     *
-     * @throws \Throwable
      */
-    public function renderHeader($lastStyles = [])
+    public function renderHeader(array $lastStyles = []): string
     {
         $styles = $this->getStyles($lastStyles);
 
@@ -435,12 +355,8 @@ class Assets
 
     /**
      * Render assets to footer.
-     *
-     * @return string
-     *
-     * @throws \Throwable
      */
-    public function renderFooter()
+    public function renderFooter(): string
     {
         $bodyScripts = $this->getScripts(self::ASSETS_SCRIPT_POSITION_FOOTER);
 

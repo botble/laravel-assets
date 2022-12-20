@@ -1,6 +1,6 @@
 <?php
 
-namespace Botble\Assets\Tests;
+namespace Botble\Assets\Tests\Unit;
 
 use Botble\Assets\Assets;
 use Mockery;
@@ -30,7 +30,7 @@ class AssetsTest extends TestCase
             ->once()
             ->andReturn([
                 [
-                    'src'        => '/js/app.js?v=1.0',
+                    'src' => '/js/app.js?v=1.0',
                     'attributes' => [],
                 ],
             ]);
@@ -49,7 +49,7 @@ class AssetsTest extends TestCase
             ->once()
             ->andReturn([
                 [
-                    'src'        => '/css/bootstrap.css?v=1.0',
+                    'src' => '/css/bootstrap.css?v=1.0',
                     'attributes' => [
                         'integrity' => 'sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB',
                         'crossorigin' => 'anonymous',

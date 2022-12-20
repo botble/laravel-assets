@@ -10,14 +10,10 @@ class HtmlBuilder
     /**
      * The URL generator instance.
      *
-     * @var \Illuminate\Contracts\Routing\UrlGenerator
+     * @var UrlGenerator
      */
     protected $url;
 
-    /**
-     * HtmlBuilder constructor.
-     * @param UrlGenerator $urlGenerator
-     */
     public function __construct(UrlGenerator $urlGenerator)
     {
         $this->url = $urlGenerator;
@@ -25,17 +21,11 @@ class HtmlBuilder
 
     /**
      * Generate a link to a JavaScript file.
-     *
-     * @param string $url
-     * @param array $attributes
-     * @param bool $secure
-     *
-     * @return HtmlString|string
      */
-    public function script($url, $attributes = [], $secure = null)
+    public function script(string $url, array $attributes = [], bool $secure = false): HtmlString
     {
-        if (!$url) {
-            return '';
+        if (! $url) {
+            return new HtmlString();
         }
 
         $attributes['src'] = $this->url->asset($url, $secure);
@@ -45,23 +35,17 @@ class HtmlBuilder
 
     /**
      * Generate a link to a CSS file.
-     *
-     * @param string $url
-     * @param array $attributes
-     * @param bool $secure
-     *
-     * @return HtmlString|string
      */
-    public function style($url, $attributes = [], $secure = null)
+    public function style(string $url, array $attributes = [], bool $secure = false): HtmlString
     {
-        if (!$url) {
-            return '';
+        if (! $url) {
+            return new HtmlString();
         }
 
         $defaults = [
             'media' => 'all',
-            'type'  => 'text/css',
-            'rel'   => 'stylesheet',
+            'type' => 'text/css',
+            'rel' => 'stylesheet',
         ];
 
         $attributes = array_merge($defaults, $attributes);
@@ -73,12 +57,8 @@ class HtmlBuilder
 
     /**
      * Build an HTML attribute string from an array.
-     *
-     * @param array $attributes
-     *
-     * @return string
      */
-    public function attributes($attributes)
+    public function attributes(array $attributes): string
     {
         $html = [];
 
@@ -97,25 +77,16 @@ class HtmlBuilder
 
     /**
      * Transform the string to an Html serializable object.
-     *
-     * @param $html
-     *
-     * @return \Illuminate\Support\HtmlString
      */
-    protected function toHtmlString($html)
+    protected function toHtmlString(?string $html): HtmlString
     {
         return new HtmlString($html);
     }
 
     /**
      * Build a single attribute element.
-     *
-     * @param string $key
-     * @param string $value
-     *
-     * @return string
      */
-    protected function attributeElement($key, $value)
+    protected function attributeElement(string $key, $value)
     {
         // Treat boolean attributes as HTML properties
         if (is_bool($value) && $key !== 'value') {
@@ -126,7 +97,7 @@ class HtmlBuilder
             return 'class="' . implode(' ', $value) . '"';
         }
 
-        if (!empty($value)) {
+        if (! empty($value)) {
             return $key . '="' . e($value, false) . '"';
         }
 
