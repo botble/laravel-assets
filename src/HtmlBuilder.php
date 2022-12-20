@@ -22,7 +22,7 @@ class HtmlBuilder
     /**
      * Generate a link to a JavaScript file.
      */
-    public function script(string $url, array $attributes = [], bool $secure = false): HtmlString
+    public function script(string $url, array $attributes = [], ?bool $secure = null): HtmlString
     {
         if (! $url) {
             return new HtmlString();
@@ -36,7 +36,7 @@ class HtmlBuilder
     /**
      * Generate a link to a CSS file.
      */
-    public function style(string $url, array $attributes = [], bool $secure = false): HtmlString
+    public function style(string $url, array $attributes = [], ?bool $secure = null): HtmlString
     {
         if (! $url) {
             return new HtmlString();
