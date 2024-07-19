@@ -1,3 +1,1 @@
 preset: psr12
-enabled:
-  - binary_operator_exactly_one_space
