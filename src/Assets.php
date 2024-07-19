@@ -10,22 +10,22 @@ use Illuminate\Support\Arr;
  */
 class Assets
 {
-    protected $config;
+    protected array $config;
 
-    protected $htmlBuilder;
+    protected HtmlBuilder $htmlBuilder;
 
-    protected $scripts = [];
+    protected array $scripts = [];
 
-    protected $styles = [];
+    protected array $styles = [];
 
-    protected $appendedScripts = [
+    protected array $appendedScripts = [
         'header' => [],
         'footer' => [],
     ];
 
-    protected $appendedStyles = [];
+    protected array $appendedStyles = [];
 
-    protected $build = '';
+    protected string $build = '';
 
     public const ASSETS_SCRIPT_POSITION_HEADER = 'header';
 
@@ -42,36 +42,21 @@ class Assets
         $this->htmlBuilder = $htmlBuilder;
     }
 
-    /**
-     * Add scripts to current module.
-     *
-     * @param  string|array  $assets
-     */
-    public function addScripts($assets): self
+    public function addScripts(array|string $assets): static
     {
         $this->scripts = array_merge($this->scripts, (array)$assets);
 
         return $this;
     }
 
-    /**
-     * Add Css to current module.
-     *
-     * @param  string|array  $assets
-     */
-    public function addStyles($assets): self
+    public function addStyles(array|string $assets): static
     {
         $this->styles = array_merge($this->styles, (array)$assets);
 
         return $this;
     }
 
-    /**
-     * Add styles directly.
-     *
-     * @param  array|string  $assets
-     */
-    public function addStylesDirectly($assets): self
+    public function addStylesDirectly(array|string $assets, array $attributes = []): static
     {
         foreach ((array)$assets as &$item) {
             $item = ltrim(trim($item), '/');
@@ -79,7 +64,7 @@ class Assets
             if (! in_array($item, $this->appendedStyles)) {
                 $this->appendedStyles[$item] = [
                     'src' => $item,
-                    'attributes' => [],
+                    'attributes' => $attributes,
                 ];
             }
         }
@@ -87,20 +72,18 @@ class Assets
         return $this;
     }
 
-    /**
-     * Add scripts directly.
-     *
-     * @param  string|array  $assets
-     */
-    public function addScriptsDirectly($assets, string $location = self::ASSETS_SCRIPT_POSITION_FOOTER): self
-    {
+    public function addScriptsDirectly(
+        array|string $assets, 
+        string $location = self::ASSETS_SCRIPT_POSITION_FOOTER, 
+        array $attributes = []
+    ): static {
         foreach ((array)$assets as &$item) {
             $item = ltrim(trim($item), '/');
 
             if (! in_array($item, $this->appendedScripts[$location])) {
                 $this->appendedScripts[$location][$item] = [
                     'src' => $item,
-                    'attributes' => [],
+                    'attributes' => $attributes,
                 ];
             }
         }
@@ -108,12 +91,7 @@ class Assets
         return $this;
     }
 
-    /**
-     * Remove CSS from current module.
-     *
-     * @param  string|array  $assets
-     */
-    public function removeStyles($assets): self
+    public function removeStyles(array|string $assets): static
     {
         if (empty($this->styles)) {
             return $this;
@@ -131,12 +109,7 @@ class Assets
         return $this;
     }
 
-    /**
-     * Remove scripts.
-     *
-     * @param  string|array  $assets
-     */
-    public function removeScripts($assets): self
+    public function removeScripts(array|string $assets): static
     {
         if (empty($this->scripts)) {
             return $this;
@@ -154,16 +127,15 @@ class Assets
         return $this;
     }
 
-    /**
-     * Remove script/style items directly based on location (`header` or `footer`)
-     * @param  string|array  $assets
-     */
-    public function removeItemDirectly($assets, ?string $location = null): self
+    public function removeItemDirectly(array|string $assets, ?string $location = null): static
     {
         foreach ((array)$assets as $item) {
             $item = ltrim(trim($item), '/');
 
-            if ($location && in_array($location, [self::ASSETS_SCRIPT_POSITION_HEADER, self::ASSETS_SCRIPT_POSITION_FOOTER])) {
+            if (
+                $location 
+                && in_array($location, [self::ASSETS_SCRIPT_POSITION_HEADER, self::ASSETS_SCRIPT_POSITION_FOOTER])
+            ) {
                 Arr::forget($this->appendedScripts[$location], $item);
             } else {
                 Arr::forget($this->appendedScripts[self::ASSETS_SCRIPT_POSITION_HEADER], $item);
@@ -274,7 +246,7 @@ class Assets
     }
 
     /**
-     * @return string|array
+     * @return array|string
      */
     protected function getSourceUrl(string $configName)
     {
