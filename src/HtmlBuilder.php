@@ -19,7 +19,7 @@ class HtmlBuilder
      */
     public function script(string $url, array $attributes = [], ?bool $secure = null): HtmlString
     {
-        if (!$url) {
+        if (! $url) {
             return new HtmlString();
         }
 
@@ -33,7 +33,7 @@ class HtmlBuilder
      */
     public function style(string $url, array $attributes = [], ?bool $secure = null): HtmlString
     {
-        if (!$url) {
+        if (! $url) {
             return new HtmlString();
         }
 
@@ -57,7 +57,7 @@ class HtmlBuilder
     {
         $html = [];
 
-        foreach ((array)$attributes as $key => $value) {
+        foreach ((array) $attributes as $key => $value) {
             $element = is_numeric($key) ? $key : $this->attributeElement($key, $value);
 
             if (empty($element)) {
@@ -92,7 +92,7 @@ class HtmlBuilder
             return 'class="' . implode(' ', $value) . '"';
         }
 
-        if (!empty($value)) {
+        if (! empty($value)) {
             return $key . '="' . e($value, false) . '"';
         }
 

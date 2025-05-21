@@ -44,24 +44,24 @@ class Assets
 
     public function addScripts(array|string $assets): static
     {
-        $this->scripts = array_merge($this->scripts, (array)$assets);
+        $this->scripts = array_merge($this->scripts, (array) $assets);
 
         return $this;
     }
 
     public function addStyles(array|string $assets): static
     {
-        $this->styles = array_merge($this->styles, (array)$assets);
+        $this->styles = array_merge($this->styles, (array) $assets);
 
         return $this;
     }
 
     public function addStylesDirectly(array|string $assets, array $attributes = []): static
     {
-        foreach ((array)$assets as &$item) {
+        foreach ((array) $assets as &$item) {
             $item = ltrim(trim($item), '/');
 
-            if (!in_array($item, $this->appendedStyles)) {
+            if (! in_array($item, $this->appendedStyles)) {
                 $this->appendedStyles[$item] = [
                     'src' => $item,
                     'attributes' => $attributes,
@@ -77,10 +77,10 @@ class Assets
         string $location = self::ASSETS_SCRIPT_POSITION_FOOTER,
         array $attributes = []
     ): static {
-        foreach ((array)$assets as &$item) {
+        foreach ((array) $assets as &$item) {
             $item = ltrim(trim($item), '/');
 
-            if (!in_array($item, $this->appendedScripts[$location])) {
+            if (! in_array($item, $this->appendedScripts[$location])) {
                 $this->appendedScripts[$location][$item] = [
                     'src' => $item,
                     'attributes' => $attributes,
@@ -97,7 +97,7 @@ class Assets
             return $this;
         }
 
-        foreach ((array)$assets as $rem) {
+        foreach ((array) $assets as $rem) {
             $index = array_search($rem, $this->styles);
             if ($index === false) {
                 continue;
@@ -115,7 +115,7 @@ class Assets
             return $this;
         }
 
-        foreach ((array)$assets as $rem) {
+        foreach ((array) $assets as $rem) {
             $index = array_search($rem, $this->scripts);
             if ($index === false) {
                 continue;
@@ -129,7 +129,7 @@ class Assets
 
     public function removeItemDirectly(array|string $assets, ?string $location = null): static
     {
-        foreach ((array)$assets as $item) {
+        foreach ((array) $assets as $item) {
             $item = ltrim(trim($item), '/');
 
             if (
@@ -158,7 +158,7 @@ class Assets
         foreach ($this->scripts as $script) {
             $configName = 'resources.scripts.' . $script;
 
-            if (!empty($location) && $location !== Arr::get($this->config, $configName . '.location')) {
+            if (! empty($location) && $location !== Arr::get($this->config, $configName . '.location')) {
                 continue; // Skip assets that don't match this location
             }
 
@@ -174,7 +174,7 @@ class Assets
     public function getStyles(array $lastStyles = []): array
     {
         $styles = [];
-        if (!empty($lastStyles)) {
+        if (! empty($lastStyles)) {
             $this->styles = array_merge($this->styles, $lastStyles);
         }
 
@@ -226,19 +226,19 @@ class Assets
     {
         $html = '';
 
-        if (!in_array($type, ['style', 'script'])) {
+        if (! in_array($type, ['style', 'script'])) {
             return $html;
         }
 
         $configName = 'resources.' . $type . 's.' . $name;
 
-        if (!Arr::has($this->config, $configName)) {
+        if (! Arr::has($this->config, $configName)) {
             return $html;
         }
 
         $src = $this->getSourceUrl($configName);
 
-        foreach ((array)$src as $item) {
+        foreach ((array) $src as $item) {
             $html .= $this->htmlBuilder->{$type}($item, ['class' => 'hidden'])->toHtml();
         }
 
@@ -250,7 +250,7 @@ class Assets
      */
     protected function getSourceUrl(string $configName)
     {
-        if (!Arr::has($this->config, $configName)) {
+        if (! Arr::has($this->config, $configName)) {
             return '';
         }
 
@@ -265,7 +265,7 @@ class Assets
 
     protected function isUsingCdn(string $configName): bool
     {
-        return Arr::get($this->config, $configName . '.use_cdn', false) && !$this->config['offline'];
+        return Arr::get($this->config, $configName . '.use_cdn', false) && ! $this->config['offline'];
     }
 
     protected function getSource(string $configName, ?string $location = null): array
@@ -278,8 +278,8 @@ class Assets
 
         $scripts = [];
 
-        foreach ((array)$src as $s) {
-            if (!$s) {
+        foreach ((array) $src as $s) {
+            if (! $s) {
                 continue;
             }
 
