@@ -58,15 +58,19 @@ class Assets
 
     public function addStylesDirectly(array|string $assets, array $attributes = []): static
     {
-        foreach ((array) $assets as &$item) {
+        foreach ((array) $assets as $item) {
             $item = ltrim(trim($item), '/');
 
-            if (! in_array($item, $this->appendedStyles)) {
-                $this->appendedStyles[$item] = [
-                    'src' => $item,
-                    'attributes' => $attributes,
-                ];
+            // Keyed lookup instead of an in_array() scan over the stored arrays: O(1), and
+            // a bare re-registration can no longer wipe attributes an earlier caller set.
+            if (isset($this->appendedStyles[$item]) && empty($attributes)) {
+                continue;
             }
+
+            $this->appendedStyles[$item] = [
+                'src' => $item,
+                'attributes' => $attributes,
+            ];
         }
 
         return $this;
@@ -77,15 +81,21 @@ class Assets
         string $location = self::ASSETS_SCRIPT_POSITION_FOOTER,
         array $attributes = []
     ): static {
-        foreach ((array) $assets as &$item) {
+        // An unknown location would auto-vivify a bucket that is never rendered,
+        // silently dropping the asset.
+        $location = $this->normalizeLocation($location);
+
+        foreach ((array) $assets as $item) {
             $item = ltrim(trim($item), '/');
 
-            if (! in_array($item, $this->appendedScripts[$location])) {
-                $this->appendedScripts[$location][$item] = [
-                    'src' => $item,
-                    'attributes' => $attributes,
-                ];
+            if (isset($this->appendedScripts[$location][$item]) && empty($attributes)) {
+                continue;
             }
+
+            $this->appendedScripts[$location][$item] = [
+                'src' => $item,
+                'attributes' => $attributes,
+            ];
         }
 
         return $this;
@@ -93,53 +103,29 @@ class Assets
 
     public function removeStyles(array|string $assets): static
     {
-        if (empty($this->styles)) {
-            return $this;
-        }
-
-        foreach ((array) $assets as $rem) {
-            $index = array_search($rem, $this->styles);
-            if ($index === false) {
-                continue;
-            }
-
-            Arr::forget($this->styles, $index);
-        }
+        $this->styles = array_values(array_diff($this->styles, (array) $assets));
 
         return $this;
     }
 
     public function removeScripts(array|string $assets): static
     {
-        if (empty($this->scripts)) {
-            return $this;
-        }
-
-        foreach ((array) $assets as $rem) {
-            $index = array_search($rem, $this->scripts);
-            if ($index === false) {
-                continue;
-            }
-
-            Arr::forget($this->scripts, $index);
-        }
+        $this->scripts = array_values(array_diff($this->scripts, (array) $assets));
 
         return $this;
     }
 
     public function removeItemDirectly(array|string $assets, ?string $location = null): static
     {
+        $locations = $location && in_array($location, $this->supportedLocations())
+            ? [$location]
+            : $this->supportedLocations();
+
         foreach ((array) $assets as $item) {
             $item = ltrim(trim($item), '/');
 
-            if (
-                $location
-                && in_array($location, [self::ASSETS_SCRIPT_POSITION_HEADER, self::ASSETS_SCRIPT_POSITION_FOOTER])
-            ) {
-                Arr::forget($this->appendedScripts[$location], $item);
-            } else {
-                Arr::forget($this->appendedScripts[self::ASSETS_SCRIPT_POSITION_HEADER], $item);
-                Arr::forget($this->appendedScripts[self::ASSETS_SCRIPT_POSITION_FOOTER], $item);
+            foreach ($locations as $bucket) {
+                unset($this->appendedScripts[$bucket][$item]);
             }
         }
 
@@ -147,43 +133,73 @@ class Assets
     }
 
     /**
-     * Get All scripts in current module based on location (`header` or `footer`)
+     * Get all scripts in current module based on location (`header` or `footer`).
+     * An empty location returns every script, appended ones included.
      */
     public function getScripts(?string $location = null): array
     {
-        $scripts = [];
-
         $this->scripts = array_unique($this->scripts);
 
-        foreach ($this->scripts as $script) {
-            $configName = 'resources.scripts.' . $script;
+        $scripts = [];
 
-            if (! empty($location) && $location !== Arr::get($this->config, $configName . '.location')) {
+        foreach ($this->scripts as $script) {
+            // Resolve the resource node once. The previous implementation walked the
+            // config tree separately for location/use_cdn/attributes/src (~7 dot-path
+            // lookups per asset) on every call.
+            $resource = $this->resolveResource('resources.scripts.' . $script);
+
+            if (! $resource) {
+                continue;
+            }
+
+            if (! empty($location) && $location !== Arr::get($resource, 'location')) {
                 continue; // Skip assets that don't match this location
             }
 
-            $scripts = array_merge($scripts, $this->getScriptItem($location, $configName, $script));
+            foreach ($this->resolveSource($resource, $location) as $item) {
+                $scripts[] = $item;
+            }
+        }
+
+        if (empty($location)) {
+            foreach ($this->supportedLocations() as $bucket) {
+                $scripts = array_merge($scripts, $this->appendedScripts[$bucket] ?? []);
+            }
+
+            return $scripts;
         }
 
         return array_merge($scripts, Arr::get($this->appendedScripts, $location, []));
     }
 
     /**
-     * Get All CSS in current module. Append last CSS to current module
+     * Get all CSS in current module. Append last CSS to current module.
      */
     public function getStyles(array $lastStyles = []): array
     {
-        $styles = [];
         if (! empty($lastStyles)) {
             $this->styles = array_merge($this->styles, $lastStyles);
         }
 
+        // Scripts flagged with `include_style` must contribute their stylesheet here,
+        // no matter where the script itself renders. Resolving them from getScripts()
+        // dropped the styles of every footer script, because the <head> was already out.
+        $this->addStylesFromScripts();
+
         $this->styles = array_unique($this->styles);
 
-        foreach ($this->styles as $style) {
-            $configName = 'resources.styles.' . $style;
+        $styles = [];
 
-            $styles = array_merge($styles, $this->getSource($configName));
+        foreach ($this->styles as $style) {
+            $resource = $this->resolveResource('resources.styles.' . $style);
+
+            if (! $resource) {
+                continue;
+            }
+
+            foreach ($this->resolveSource($resource) as $item) {
+                $styles[] = $item;
+            }
         }
 
         return array_merge($styles, $this->appendedStyles);
@@ -206,7 +222,23 @@ class Assets
     }
 
     /**
+     * Queue the stylesheets of every registered script declaring `include_style`.
+     */
+    protected function addStylesFromScripts(): void
+    {
+        foreach (array_unique($this->scripts) as $script) {
+            if (Arr::get($this->config, 'resources.scripts.' . $script . '.include_style')) {
+                $this->styles[] = $script;
+            }
+        }
+    }
+
+    /**
      * Get script item.
+     *
+     * Kept for backwards compatibility only; the render path resolves the resource node
+     * once and calls resolveSource() instead. `include_style` is handled up-front by
+     * addStylesFromScripts(), so this method's addStyles() call is now redundant.
      */
     protected function getScriptItem(string $location, string $configName, string $script): array
     {
@@ -230,15 +262,13 @@ class Assets
             return $html;
         }
 
-        $configName = 'resources.' . $type . 's.' . $name;
+        $resource = $this->resolveResource('resources.' . $type . 's.' . $name);
 
-        if (! Arr::has($this->config, $configName)) {
+        if (! $resource) {
             return $html;
         }
 
-        $src = $this->getSourceUrl($configName);
-
-        foreach ((array) $src as $item) {
+        foreach ((array) $this->resolveSourceUrl($resource) as $item) {
             $html .= $this->htmlBuilder->{$type}($item, ['class' => 'hidden'])->toHtml();
         }
 
@@ -246,35 +276,72 @@ class Assets
     }
 
     /**
+     * Accepts either an already resolved resource node or a dot-path into the config.
+     * Returns an empty array when the resource does not exist.
+     */
+    protected function resolveResource(array|string $resource): array
+    {
+        if (is_array($resource)) {
+            return $resource;
+        }
+
+        $resolved = Arr::get($this->config, $resource);
+
+        return is_array($resolved) ? $resolved : [];
+    }
+
+    /**
+     * Signature preserved for subclasses that override it: narrowing a widened parameter
+     * type is a fatal LSP error in PHP, so the config-path variants stay exactly as they
+     * were and delegate to the resolved-node variants below.
+     *
      * @return array|string
      */
     protected function getSourceUrl(string $configName)
     {
-        if (! Arr::has($this->config, $configName)) {
-            return '';
-        }
-
-        $src = Arr::get($this->config, $configName . '.src.local');
-
-        if ($this->isUsingCdn($configName)) {
-            $src = Arr::get($this->config, $configName . '.src.cdn');
-        }
-
-        return $src;
+        return $this->resolveSourceUrl($this->resolveResource($configName));
     }
 
     protected function isUsingCdn(string $configName): bool
     {
-        return Arr::get($this->config, $configName . '.use_cdn', false) && ! $this->config['offline'];
+        return $this->resolveUsingCdn($this->resolveResource($configName));
     }
 
     protected function getSource(string $configName, ?string $location = null): array
     {
-        $isUsingCdn = $this->isUsingCdn($configName);
+        return $this->resolveSource($this->resolveResource($configName), $location);
+    }
 
-        $attributes = $isUsingCdn ? [] : Arr::get($this->config, $configName . '.attributes', []);
+    /**
+     * @return array|string
+     */
+    protected function resolveSourceUrl(array $resource)
+    {
+        if (! $resource) {
+            return '';
+        }
 
-        $src = $this->getSourceUrl($configName);
+        return $this->resolveUsingCdn($resource)
+            ? Arr::get($resource, 'src.cdn')
+            : Arr::get($resource, 'src.local');
+    }
+
+    protected function resolveUsingCdn(array $resource): bool
+    {
+        return Arr::get($resource, 'use_cdn', false) && ! Arr::get($this->config, 'offline', true);
+    }
+
+    protected function resolveSource(array $resource, ?string $location = null): array
+    {
+        if (! $resource) {
+            return [];
+        }
+
+        $isUsingCdn = $this->resolveUsingCdn($resource);
+
+        $attributes = $isUsingCdn ? [] : Arr::get($resource, 'attributes', []);
+
+        $src = $this->resolveSourceUrl($resource);
 
         $scripts = [];
 
@@ -292,20 +359,34 @@ class Assets
         if (empty($src) &&
             $isUsingCdn &&
             $location === self::ASSETS_SCRIPT_POSITION_HEADER &&
-            Arr::has($this->config, $configName . '.fallback')) {
+            isset($resource['fallback'])) {
             $scripts[] = [
                 'src' => $src,
-                'fallback' => Arr::get($this->config, $configName . '.fallback'),
-                'fallbackURL' => Arr::get($this->config, $configName . '.src.local'),
+                'fallback' => $resource['fallback'],
+                'fallbackURL' => Arr::get($resource, 'src.local'),
             ];
         }
 
         return $scripts;
     }
 
+    protected function normalizeLocation(string $location): string
+    {
+        return in_array($location, $this->supportedLocations())
+            ? $location
+            : self::ASSETS_SCRIPT_POSITION_FOOTER;
+    }
+
+    protected function supportedLocations(): array
+    {
+        return [self::ASSETS_SCRIPT_POSITION_HEADER, self::ASSETS_SCRIPT_POSITION_FOOTER];
+    }
+
     public function getBuildVersion(): string
     {
-        return $this->build = $this->config['enable_version'] ? '?v=' . $this->config['version'] : '';
+        return $this->build = Arr::get($this->config, 'enable_version')
+            ? '?v=' . Arr::get($this->config, 'version')
+            : '';
     }
 
     public function getHtmlBuilder(): HtmlBuilder

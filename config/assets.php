@@ -3,7 +3,7 @@
 return [
     'offline' => env('ASSETS_OFFLINE', true),
     'enable_version' => env('ASSETS_ENABLE_VERSION', false),
-    'version' => env('ASSETS_VERSION', time()),
+    'version' => env('ASSETS_VERSION', '1.0.0'),
     'scripts' => [
         'modernizr',
         'app',

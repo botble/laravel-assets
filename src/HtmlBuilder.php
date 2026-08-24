@@ -39,7 +39,6 @@ class HtmlBuilder
 
         $defaults = [
             'media' => 'all',
-            'type' => 'text/css',
             'rel' => 'stylesheet',
         ];
 
@@ -57,7 +56,7 @@ class HtmlBuilder
     {
         $html = [];
 
-        foreach ((array) $attributes as $key => $value) {
+        foreach ($attributes as $key => $value) {
             $element = is_numeric($key) ? $key : $this->attributeElement($key, $value);
 
             if (empty($element)) {
